@@ -10,7 +10,8 @@ const CheckRadio& CheckRadio::check(bool checked) const
 const CheckRadio& CheckRadio::checkAndTrigger(bool checked) const
 {
 	check(checked);
-	SendMessageW(hWnd(), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hWnd()), BN_CLICKED), reinterpret_cast<LPARAM>(hWnd()));
+	SendMessageW(GetParent(hWnd()), WM_COMMAND,
+		MAKEWPARAM(GetDlgCtrlID(hWnd()), BN_CLICKED), reinterpret_cast<LPARAM>(hWnd()));
 	return *this;
 }
 

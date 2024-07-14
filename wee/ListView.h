@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include "Dialog.h"
 #include "ImgList.h"
 #include "NativeControl.h"
 
@@ -141,7 +142,7 @@ public:
 	const ListView& setSubclassBehavior() const;
 
 	// Processes Ctrl+A, context menu key, and right-click.
-	static void ProcessPreMessages(HWND hParent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId = 0);
+	static void ProcessPreMessages(Dialog* parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId = 0);
 
 private:
 	void _showContextMenu(WORD contextMenuId, bool followCursor, bool hasCtrl, bool hasShift) const;

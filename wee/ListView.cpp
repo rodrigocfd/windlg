@@ -309,10 +309,10 @@ const ListView& ListView::setSubclassBehavior() const
 	return *this;
 }
 
-void ListView::ProcessPreMessages(HWND hParent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId)
+void ListView::ProcessPreMessages(Dialog *parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId)
 {
 	if (uMsg == WM_NOTIFY) {
-		if (ListView list{hParent, idList}; list.hWnd()) {
+		if (ListView list{parent, idList}; list.hWnd()) {
 			if (NMHDR* hdr = reinterpret_cast<NMHDR*>(lp); hdr->hwndFrom == list.hWnd()) {
 				if (hdr->code == LVN_KEYDOWN) {
 					NMLVKEYDOWN* lvkd = reinterpret_cast<NMLVKEYDOWN*>(lp);

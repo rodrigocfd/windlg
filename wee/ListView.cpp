@@ -259,6 +259,21 @@ std::optional<ListView::Item> ListView::ItemCollection::hitTest(int x, int y) co
 	return (idx == -1) ? std::nullopt : std::optional{Item{_hList, idx}};
 }
 
+void ListView::ItemCollection::removeAll() const
+{
+	ListView_DeleteAllItems(_hList);
+}
+
+void ListView::ItemCollection::removeSelected() const
+{
+	int idx = -1;
+	for (;;) {
+		idx = ListView_GetNextItem(_hList, idx, LVNI_SELECTED);
+		if (idx == -1) break;
+		ListView_DeleteItem(_hList, idx);
+	}
+}
+
 void ListView::ItemCollection::selectAll(bool doSelect) const
 {
 	ListView_SetItemState(_hList, -1, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);

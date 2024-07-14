@@ -114,6 +114,8 @@ private:
 		[[nodiscard]] UINT countSelected() const;
 		[[nodiscard]] std::optional<Item> focused() const;
 		[[nodiscard]] std::optional<Item> hitTest(int x, int y) const;
+		void removeAll() const;
+		void removeSelected() const;
 		void selectAll(bool doSelect = true) const;
 		[[nodiscard]] std::vector<Item> selected() const;
 	};

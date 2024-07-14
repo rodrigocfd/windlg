@@ -24,6 +24,9 @@ protected:
 	// Calls DragQueryFile() for each file, then DragFinish().
 	[[nodiscard]] std::vector<std::wstring> droppedFiles(HDROP hDrop) const;
 
+	// Calls EnableWindow() for each child control.
+	void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
+
 	[[nodiscard]] std::optional<std::wstring> showOpenFile(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const { return _showOpenSave(true, false, namesExts); }
 	[[nodiscard]] std::optional<std::vector<std::wstring>> showOpenFiles(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
 	[[nodiscard]] std::optional<std::wstring> showSaveFile(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const { return _showOpenSave(false, false, namesExts); }

@@ -51,6 +51,12 @@ std::vector<std::wstring> Dialog::droppedFiles(HDROP hDrop) const
 	return paths;
 }
 
+void Dialog::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
+{
+	for (auto&& ctrlId : ctrlIds)
+		EnableWindow(GetDlgItem(hWnd(), ctrlId), doEnable);
+}
+
 static std::vector<COMDLG_FILTERSPEC> _makeFilters(
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts)
 {

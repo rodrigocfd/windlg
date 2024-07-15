@@ -80,6 +80,7 @@ public:
 		const Item& focus() const;
 		[[nodiscard]] constexpr int index() const { return _index; }
 		[[nodiscard]] bool isVisible() const;
+		void remove() const;
 		const Item& select(bool doSelect = true) const;
 		template<typename T> const Item& setDataPtr(T* p) const { return _setData(reinterpret_cast<T*>(p)); }
 		const Item& setText(std::wstring_view text, UINT columnIndex = 0) const;

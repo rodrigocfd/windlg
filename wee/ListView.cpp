@@ -136,12 +136,6 @@ const ListView::Item& ListView::Item::focus() const
 	return *this;
 }
 
-const ListView::Item& ListView::Item::setText(std::wstring_view text, UINT columnIndex) const
-{
-	ListView_SetItemText(_hList, _index, columnIndex, const_cast<LPWSTR>(text.data()));
-	return *this;
-}
-
 const ListView::Item& ListView::Item::select(bool doSelect) const
 {
 	ListView_SetItemState(_hList, _index, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
@@ -151,6 +145,17 @@ const ListView::Item& ListView::Item::select(bool doSelect) const
 bool ListView::Item::isVisible() const
 {
 	return ListView_IsItemVisible(_hList, _index);
+}
+
+void ListView::Item::remove() const
+{
+	ListView_DeleteItem(_hList, _index);
+}
+
+const ListView::Item& ListView::Item::setText(std::wstring_view text, UINT columnIndex) const
+{
+	ListView_SetItemText(_hList, _index, columnIndex, const_cast<LPWSTR>(text.data()));
+	return *this;
 }
 
 std::wstring ListView::Item::text(UINT columnIndex) const

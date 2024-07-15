@@ -18,9 +18,9 @@ std::wstring_view VersionInfo::strInfo(LangCp langCp, std::wstring_view entryNam
 
 	LPCWSTR pStr = nullptr;
 	UINT szStr = 0;
-	if (VerQueryValueW(_data.data(), nfo, reinterpret_cast<LPVOID*>(const_cast<LPWSTR*>(&pStr)), &szStr)) {
+	if (VerQueryValueW(_data.data(), nfo, reinterpret_cast<LPVOID*>(const_cast<LPWSTR*>(&pStr)), &szStr)) [[likely]] {
 		return std::wstring_view{pStr, szStr - 1}; // don't count terminating null
-	} else {
+	} else [[unlikely]] {
 		throw std::logic_error("Version string doesn't exist");
 	}
 }
@@ -30,7 +30,7 @@ const VS_FIXEDFILEINFO& VersionInfo::verInfo() const
 	const VS_FIXEDFILEINFO* pVi = nullptr;
 	UINT szVi = 0;
 	if (!VerQueryValueW(_data.data(), L"\\",
-			reinterpret_cast<LPVOID*>(const_cast<VS_FIXEDFILEINFO**>(&pVi)), &szVi)) {
+			reinterpret_cast<LPVOID*>(const_cast<VS_FIXEDFILEINFO**>(&pVi)), &szVi)) [[unlikely]] {
 		throw std::runtime_error("VS_FIXEDFILEINFO not found");
 	}
 	return *pVi;

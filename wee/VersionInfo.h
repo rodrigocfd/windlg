@@ -31,7 +31,7 @@ public:
 	explicit VersionInfo(std::wstring_view exePath) { _load(exePath); }
 
 	[[nodiscard]] constexpr std::span<const LangCp> langsCps() const { return _langsCps; }
-	[[nodiscard]] std::optional<std::wstring_view> strInfo(LangCp langCp, std::wstring_view entryName) const;
+	[[nodiscard]] std::wstring_view strInfo(LangCp langCp, std::wstring_view entryName) const;
 	[[nodiscard]] const VS_FIXEDFILEINFO& verInfo() const;
 	[[nodiscard]] std::array<WORD, 4> verNum() const;
 

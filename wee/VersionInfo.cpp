@@ -11,7 +11,7 @@ VersionInfo::VersionInfo()
 	_load(exePath);
 }
 
-std::optional<std::wstring_view> VersionInfo::strInfo(LangCp langCp, std::wstring_view entryName) const
+std::wstring_view VersionInfo::strInfo(LangCp langCp, std::wstring_view entryName) const
 {
 	WCHAR nfo[80] = {L'\0'};
 	wsprintfW(nfo, L"\\StringFileInfo\\%04x%04x\\%s", langCp.langId, langCp.codePage, entryName.data());
@@ -19,9 +19,9 @@ std::optional<std::wstring_view> VersionInfo::strInfo(LangCp langCp, std::wstrin
 	LPCWSTR pStr = nullptr;
 	UINT szStr = 0;
 	if (VerQueryValueW(_data.data(), nfo, reinterpret_cast<LPVOID*>(const_cast<LPWSTR*>(&pStr)), &szStr)) {
-		return {std::wstring_view{pStr, szStr - 1}}; // don't count terminating null
+		return std::wstring_view{pStr, szStr - 1}; // don't count terminating null
 	} else {
-		return std::nullopt;
+		throw std::logic_error("Version string doesn't exist");
 	}
 }
 

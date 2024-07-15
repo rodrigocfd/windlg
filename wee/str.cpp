@@ -1,4 +1,5 @@
 #include <cwctype>
+#include <format>
 #include <stdexcept>
 #include <Windows.h>
 #include "enc.h"
@@ -19,6 +20,28 @@ bool lib::str::endsWithI(std::wstring_view s, std::wstring_view theEnd)
 {
 	if (s.empty() || theEnd.empty() || theEnd.length() > s.length()) return false;
 	return !lstrcmpiW(s.data() + s.length() - theEnd.length(), theEnd.data());
+}
+
+std::wstring lib::str::fmtBytes(size_t numBytes)
+{
+	if (numBytes < 1024) {
+		return std::format(L"{} bytes", numBytes);
+	} else if (numBytes < 1024 * 1024) {
+		double d = static_cast<double>(numBytes) / 1024;
+		return std::format(L"{:.2f} KB", d);
+	} else if (numBytes < 1024 * 1024 * 1024) {
+		double d = static_cast<double>(numBytes) / 1024 / 1024;
+		return std::format(L"{:.2f} MB", d);
+	} else if (numBytes < 1024ull * 1024 * 1024 * 1024) {
+		double d = static_cast<double>(numBytes) / 1024 / 1024 / 1024;
+		return std::format(L"{:.2f} GB", d);
+	} else if (numBytes < 1024ull * 1024 * 1024 * 1024 * 1024) {
+		double d = static_cast<double>(numBytes) / 1024 / 1024 / 1024 / 1024;
+		return std::format(L"{:.2f} TB", d);
+	} else {
+		double d = static_cast<double>(numBytes) / 1024 / 1024 / 1024 / 1024 / 1024;
+		return std::format(L"{:.2f} PB", d);
+	}
 }
 
 LPCWSTR lib::str::guessLineBreak(std::wstring_view s)

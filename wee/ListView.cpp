@@ -249,6 +249,16 @@ UINT ListView::ItemCollection::countSelected() const
 	return ListView_GetSelectedCount(_hList);
 }
 
+std::optional<ListView::Item> ListView::ItemCollection::find(std::wstring_view text) const
+{
+	LVFINDINFOW fi = {
+		.flags = LVFI_STRING,
+		.psz = text.data(),
+	};
+	int idx = ListView_FindItem(_hList, -1, &fi);
+	return idx == -1 ? std::nullopt : std::optional{Item{_hList, idx}};
+}
+
 std::optional<ListView::Item> ListView::ItemCollection::focused() const
 {
 	int idx = ListView_GetNextItem(_hList, -1, LVNI_FOCUSED);
@@ -271,9 +281,8 @@ void ListView::ItemCollection::removeAll() const
 
 void ListView::ItemCollection::removeSelected() const
 {
-	int idx = -1;
 	for (;;) {
-		idx = ListView_GetNextItem(_hList, idx, LVNI_SELECTED);
+		int idx = ListView_GetNextItem(_hList, -1, LVNI_SELECTED);
 		if (idx == -1) break;
 		ListView_DeleteItem(_hList, idx);
 	}

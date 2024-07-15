@@ -113,6 +113,7 @@ private:
 		[[nodiscard]] std::vector<Item> all() const;
 		[[nodiscard]] UINT count() const;
 		[[nodiscard]] UINT countSelected() const;
+		[[nodiscard]] std::optional<Item> find(std::wstring_view text) const;
 		[[nodiscard]] std::optional<Item> focused() const;
 		[[nodiscard]] std::optional<Item> hitTest(int x, int y) const;
 		void removeAll() const;

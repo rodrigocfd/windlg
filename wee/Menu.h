@@ -20,9 +20,11 @@ public:
 	constexpr explicit Menu(HMENU hMenu) : _hMenu{hMenu} { }
 	Menu(HINSTANCE hInst, WORD menuId);
 
+	void destroy();
+	void enableItemsByCmd(std::initializer_list<WORD> cmdIds, bool doEnable = true) const;
+	void enableItemsByPos(std::initializer_list<UINT> poss, bool doEnable = true) const;
 	[[nodiscard]] constexpr HMENU hMenu() const { return _hMenu; }
-	void enableItemsByCmd(std::initializer_list<WORD> cmdIds, bool doEnable = true);
-	void enableItemsByPos(std::initializer_list<UINT> poss, bool doEnable = true);
+	[[nodiscard]] WORD idByPos(UINT pos) const;
 	void setDefaultItemByCmd(WORD cmdId) const;
 	void setDefaultItemByPos(UINT pos) const;
 	void showAtPoint(int x, int y, HWND hParent, HWND hWndCoordsRelativeTo) const;

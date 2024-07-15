@@ -13,16 +13,27 @@ Menu::Menu(HINSTANCE hInst, WORD menuId)
 {
 }
 
-void Menu::enableItemsByCmd(std::initializer_list<WORD> cmdIds, bool doEnable)
+void Menu::destroy()
+{
+	DestroyMenu(_hMenu);
+	_hMenu = nullptr;
+}
+
+void Menu::enableItemsByCmd(std::initializer_list<WORD> cmdIds, bool doEnable) const
 {
 	for (auto&& cmdId : cmdIds)
 		EnableMenuItem(_hMenu, cmdId, MF_BYCOMMAND | (doEnable ? MF_ENABLED : MF_DISABLED));
 }
 
-void Menu::enableItemsByPos(std::initializer_list<UINT> poss, bool doEnable)
+void Menu::enableItemsByPos(std::initializer_list<UINT> poss, bool doEnable) const
 {
 	for (auto&& pos : poss)
 		EnableMenuItem(_hMenu, pos, MF_BYPOSITION | (doEnable ? MF_ENABLED : MF_DISABLED));
+}
+
+WORD Menu::idByPos(UINT pos) const
+{
+	return GetMenuItemID(_hMenu, pos);
 }
 
 void Menu::setDefaultItemByCmd(WORD cmdId) const

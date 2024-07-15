@@ -390,7 +390,10 @@ void ListView::_showContextMenu(WORD contextMenuId, bool followCursor, bool hasC
 
 	HWND hParent = GetParent(hWnd());
 	HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE));
-	Menu{hInst, contextMenuId}.subMenu(0).showAtPoint(menuPos.x, menuPos.y, hParent, hWnd());
+	
+	Menu menu{hInst, contextMenuId};
+	menu.subMenu(0).showAtPoint(menuPos.x, menuPos.y, hParent, hWnd());
+	menu.destroy();
 }
 
 LRESULT CALLBACK ListView::_SubclassProc(HWND hList, UINT uMsg,

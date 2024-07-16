@@ -18,6 +18,16 @@ std::vector<std::wstring> ListView::Column::itemTexts() const
 	return texts;
 }
 
+int ListView::Column::justification() const
+{
+	HWND hHeader = ListView_GetHeader(_hList);
+
+	HDITEMW hdi = {.mask = HDI_FORMAT};
+	Header_GetItem(hHeader, _index, &hdi);
+
+	return hdi.fmt & (HDF_LEFT | HDF_CENTER | HDF_RIGHT);
+}
+
 std::vector<std::wstring> ListView::Column::selectedItemTexts() const
 {
 	std::vector<std::wstring> texts;
@@ -31,16 +41,35 @@ std::vector<std::wstring> ListView::Column::selectedItemTexts() const
 	}
 }
 
-const ListView::Column& ListView::Column::setJustify(WORD hdf) const
+const ListView::Column& ListView::Column::setJustification(WORD hdf) const
 {
 	HWND hHeader = ListView_GetHeader(_hList);
 
 	HDITEMW hdi = {.mask = HDI_FORMAT};
 	Header_GetItem(hHeader, _index, &hdi);
 
-	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT);
+	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT); // clear all three
 	hdi.fmt |= hdf;
 	Header_SetItem(hHeader, _index, &hdi);
+
+	return *this;
+}
+
+const ListView::Column& ListView::Column::setSortArrow(int hdf) const
+{
+	HWND hHeader = ListView_GetHeader(_hList);
+	UINT numCols = Header_GetItemCount(hHeader);
+
+	for (UINT i = 0; i < numCols; ++i) {
+		HDITEMW hdi = {.mask = HDI_FORMAT};
+		Header_GetItem(hHeader, i, &hdi);
+
+		hdi.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP); // clear all two
+		if (i == _index) // only the targeted column will have the flag set
+			hdi.fmt |= hdf;
+
+		Header_SetItem(hHeader, i, &hdi);
+	}
 
 	return *this;
 }
@@ -53,6 +82,12 @@ const ListView::Column& ListView::Column::setText(std::wstring_view text) const
 	};
 
 	ListView_SetColumn(_hList, _index, &lvc);
+	return *this;
+}
+
+const ListView::Column& ListView::Column::setWidth(UINT width) const
+{
+	ListView_SetColumnWidth(_hList, _index, width);
 	return *this;
 }
 
@@ -72,10 +107,14 @@ const ListView::Column& ListView::Column::setWidthToFill() const
 	return setWidth(rc.right - cxUsed);
 }
 
-const ListView::Column& ListView::Column::setWidth(UINT width) const
+int ListView::Column::sortArrow() const
 {
-	ListView_SetColumnWidth(_hList, _index, width);
-	return *this;
+	HWND hHeader = ListView_GetHeader(_hList);
+
+	HDITEMW hdi = {.mask = HDI_FORMAT};
+	Header_GetItem(hHeader, _index, &hdi);
+
+	return hdi.fmt & (HDF_SORTDOWN | HDF_SORTUP);
 }
 
 std::wstring ListView::Column::text() const
@@ -306,6 +345,21 @@ std::vector<ListView::Item> ListView::ItemCollection::selected() const
 	}
 }
 
+void ListView::ItemCollection::sort(std::function<int(Item, Item)> callback) const
+{
+	struct Info final {
+		ListView lv;
+		std::function<int(Item, Item)> callback;
+	};
+	Info nfo = {.lv = ListView{_hList}, .callback = std::move(callback)};
+
+	ListView_SortItemsEx(_hList, [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int {
+		Info* pNfo = reinterpret_cast<Info*>(lp);
+		return pNfo->callback(pNfo->lv.items[static_cast<int>(idxA)],
+			pNfo->lv.items[static_cast<int>(idxB)]);
+	}, &nfo);
+}
+
 
 const ListView& ListView::setFullRowSelect(bool doSet) const
 {
@@ -419,6 +473,7 @@ LRESULT CALLBACK ListView::_SubclassProc(HWND hList, UINT uMsg,
 	} else if (uMsg == WM_NOTIFY) {
 		NMHDR *hdr = reinterpret_cast<NMHDR*>(lp);
 		if (hdr->code >= HDN_GETDISPINFO && hdr->code <= HDN_BEGINDRAG) {
+			hdr->idFrom = GetDlgCtrlID(hList); // replace Header ID with ListView's, easier for DLGPROC
 			SendMessageW(GetAncestor(hList, GA_PARENT), WM_NOTIFY, wp, lp); // forward HDN messages to parent
 		}
 	} else if (uMsg == WM_NCDESTROY) {

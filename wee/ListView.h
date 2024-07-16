@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -29,11 +30,14 @@ public:
 
 		[[nodiscard]] constexpr int index() const { return _index; }
 		[[nodiscard]] std::vector<std::wstring> itemTexts() const;
+		[[nodiscard]] int justification() const;
 		[[nodiscard]] std::vector<std::wstring> selectedItemTexts() const;
-		const Column& setJustify(WORD hdf) const;
+		const Column& setJustification(WORD hdf) const;
+		const Column& setSortArrow(int hdf) const;
 		const Column& setText(std::wstring_view text) const;
 		const Column& setWidth(UINT width) const;
 		const Column& setWidthToFill() const;
+		[[nodiscard]] int sortArrow() const;
 		[[nodiscard]] std::wstring text() const;
 		[[nodiscard]] UINT width() const;
 	};
@@ -76,13 +80,13 @@ public:
 		constexpr Item(HWND hList, int index) : _hList{hList}, _index{index} { }
 		constexpr Item(ListView* owner, int index) : Item{owner->hWnd(), index} { }
 
-		template<typename T> [[nodiscard]] T* dataPtr() const { return reinterpret_cast<T*>(_data()); }
+		template<typename T> [[nodiscard]] T data() const { if constexpr (std::is_pointer_v<T>) return reinterpret_cast<T>(_data()); else return static_cast<T>(_data()); }
 		const Item& focus() const;
 		[[nodiscard]] constexpr int index() const { return _index; }
 		[[nodiscard]] bool isVisible() const;
 		void remove() const;
 		const Item& select(bool doSelect = true) const;
-		template<typename T> const Item& setDataPtr(T* p) const { return _setData(reinterpret_cast<T*>(p)); }
+		template<typename T> const Item& setData(T v) const { if constexpr (std::is_pointer_v<T>) return _setData(reinterpret_cast<LPARAM>(v)); else return _setData(static_cast<LPARAM>(v)); }
 		const Item& setText(std::wstring_view text, UINT columnIndex = 0) const;
 		[[nodiscard]] std::wstring text(UINT columnIndex = 0) const;
 
@@ -120,6 +124,7 @@ private:
 		void removeSelected() const;
 		void selectAll(bool doSelect = true) const;
 		[[nodiscard]] std::vector<Item> selected() const;
+		void sort(std::function<int(Item, Item)> callback) const;
 	};
 
 public:
@@ -138,14 +143,10 @@ public:
 	ListView(HWND hParent, WORD listId) : NativeControl{hParent, listId} { }
 	ListView(Window* parent, WORD listId) : NativeControl{parent, listId} { }
 
-	// Adds LVS_EX_FULLROWSELECT extended style.
 	const ListView& setFullRowSelect(bool doSet = true) const;
-	// Calls ListView_SetImageList().
 	const ListView& setImageList(const ImgList& imgList) const;
-	// Calls SetWindowSubclass() to forward Enter key and HDN notifications to parent.
 	const ListView& setSubclassBehavior() const;
 
-	// Processes Ctrl+A, context menu key, and right-click.
 	static void ProcessMessages(Dialog* parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId = 0);
 
 private:

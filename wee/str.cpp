@@ -21,6 +21,16 @@ bool lib::str::endsWithI(std::wstring_view s, std::wstring_view theEnd)
 	return !lstrcmpiW(s.data() + s.length() - theEnd.length(), theEnd.data());
 }
 
+bool lib::str::eq(std::wstring_view a, std::wstring_view b)
+{
+	return !lstrcmpW(a.data(), b.data());
+}
+
+bool lib::str::eqI(std::wstring_view a, std::wstring_view b)
+{
+	return !lstrcmpiW(a.data(), b.data());
+}
+
 std::wstring lib::str::fmtBytes(size_t numBytes)
 {
 	constexpr size_t sz = 40;

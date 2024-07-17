@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <system_error>
 #include "path.h"
+#include "str.h"
 using namespace lib;
 using namespace lib::path;
 
@@ -29,7 +30,7 @@ std::vector<std::wstring> lib::path::dirList(std::wstring_view pathAndFilter)
 
 	std::vector<std::wstring> entries;
 	for (;;) {
-		if (lstrcmpW(wfd.cFileName, L".") && lstrcmpW(wfd.cFileName, L"..")) { // skip these
+		if (!str::eq(wfd.cFileName, L".") && !str::eq(wfd.cFileName, L"..")) { // skip these
 			size_t idxBackslash = pathAndFilter.find_last_of(L"\\");
 			if (idxBackslash != std::wstring::npos) [[likely]] {
 				std::wstring fullPath{pathAndFilter.substr(0, idxBackslash + 1)};
@@ -102,6 +103,15 @@ std::wstring lib::path::fileFrom(std::wstring_view p)
 	if (found != std::wstring::npos)
 		ret.erase(0, found + 1);
 	return ret;
+}
+
+bool lib::path::hasExtension(std::wstring_view p, std::initializer_list<std::wstring_view> exts)
+{
+	for (auto&& ext : exts) {
+		if (str::endsWithI(p, ext))
+			return true;
+	}
+	return false;
 }
 
 static DWORD _getAttrs(std::wstring_view p)

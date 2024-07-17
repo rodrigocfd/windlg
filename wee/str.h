@@ -12,6 +12,8 @@ constexpr size_t SSO_LEN = std::string{}.capacity();
 [[nodiscard]] bool contains(std::wstring_view s, std::wstring_view what, size_t off = 0);
 [[nodiscard]] bool endsWith(std::wstring_view s, std::wstring_view theEnd);
 [[nodiscard]] bool endsWithI(std::wstring_view s, std::wstring_view theEnd);
+[[nodiscard]] bool eq(std::wstring_view a, std::wstring_view b);
+[[nodiscard]] bool eqI(std::wstring_view a, std::wstring_view b);
 [[nodiscard]] std::wstring fmtBytes(size_t numBytes);
 [[nodiscard]] LPCWSTR guessLineBreak(std::wstring_view s);
 [[nodiscard]] std::wstring join(std::span<std::wstring> all, std::wstring_view separator = L"");

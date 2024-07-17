@@ -1,5 +1,4 @@
 #include <cwctype>
-#include <format>
 #include <stdexcept>
 #include <Windows.h>
 #include "enc.h"
@@ -24,18 +23,19 @@ bool lib::str::endsWithI(std::wstring_view s, std::wstring_view theEnd)
 
 std::wstring lib::str::fmtBytes(size_t numBytes)
 {
+	constexpr size_t sz = 40;
 	if (numBytes < 1024)
-		return std::format(L"{} bytes", numBytes);
+		return fmt<sz>(L"%zu bytes", numBytes);
 	else if (numBytes < 1024ull * 1024)
-		return std::format(L"{:.2f} KB", numBytes / 1024.);
+		return fmt<sz>(L"%.2f KB", numBytes / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024)
-		return std::format(L"{:.2f} MB", numBytes / 1024. / 1024.);
+		return fmt<sz>(L"%.2f MB", numBytes / 1024. / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024 * 1024)
-		return std::format(L"{:.2f} GB", numBytes / 1024. / 1024. / 1024.);
+		return fmt<sz>(L"%.2f GB", numBytes / 1024. / 1024. / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024 * 1024 * 1024)
-		return std::format(L"{:.2f} TB", numBytes / 1024. / 1024. / 1024. / 1024.);
+		return fmt<sz>(L"%.2f TB", numBytes / 1024. / 1024. / 1024. / 1024.);
 	else
-		return std::format(L"{:.2f} PB", numBytes / 1024. / 1024. / 1024. / 1024. / 1024.);
+		return fmt<sz>(L"%.2f PB", numBytes / 1024. / 1024. / 1024. / 1024. / 1024.);
 }
 
 LPCWSTR lib::str::guessLineBreak(std::wstring_view s)

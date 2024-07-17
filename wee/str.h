@@ -32,4 +32,14 @@ void removeDiacritics(std::wstring& s);
 void trim(std::wstring& s);
 void trimNulls(std::wstring& s);
 
+template<size_t SZ>
+std::wstring fmt(std::wstring_view format, ...) {
+	WCHAR buf[SZ] = {L'\0'};
+	va_list argPtr;
+	va_start(argPtr, format);
+	std::vswprintf(buf, ARRAYSIZE(buf), format.data(), argPtr);
+	va_end(argPtr);
+	return {buf};
+}
+
 }

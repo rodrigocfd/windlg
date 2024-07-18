@@ -4,7 +4,16 @@
 #include "str.h"
 using namespace lib;
 
-std::optional<std::wstring> lib::ini::read(
+std::optional<UINT> lib::ini::readInt(std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
+{
+	UINT val = GetPrivateProfileIntW(section.data(), key.data(), 0, iniPath.data());
+	if (GetLastError() == ERROR_FILE_NOT_FOUND) [[unlikely]] {
+		return std::nullopt;
+	}
+	return {val};
+}
+
+std::optional<std::wstring> lib::ini::readStr(
 	std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
 {
 	UINT curBufSz = str::SSO_LEN;
@@ -29,7 +38,14 @@ std::optional<std::wstring> lib::ini::read(
 	}
 }
 
-void lib::ini::write(std::wstring_view iniPath,
+void lib::ini::writeInt(std::wstring_view iniPath, std::wstring_view section, std::wstring_view key, UINT value)
+{
+	WCHAR buf[20] = {L'\0'};
+	wsprintfW(buf, L"%d", value);
+	writeStr(iniPath, section, key, buf);
+}
+
+void lib::ini::writeStr(std::wstring_view iniPath,
 	std::wstring_view section, std::wstring_view key, std::wstring_view value)
 {
 	if (!WritePrivateProfileStringW(section.data(), key.data(), value.data(), iniPath.data())) [[unlikely]] {

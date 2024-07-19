@@ -37,7 +37,8 @@ std::vector<std::wstring> lib::path::dirList(std::wstring_view pathAndFilter)
 				fullPath.append(wfd.cFileName);
 				entries.emplace_back(std::move(fullPath));
 			} else [[unlikely]] {
-				throw std::logic_error("No backslash in found file");
+				std::wstring faultyPath{wfd.cFileName};
+				throw std::logic_error("No backslash in found file " + str::toAnsi(faultyPath));
 			}
 		}
 
@@ -136,6 +137,17 @@ bool lib::path::isHidden(std::wstring_view p)
 bool lib::path::isReadOnly(std::wstring_view p)
 {
 	return _getAttrs(p) & FILE_ATTRIBUTE_READONLY;
+}
+
+std::wstring lib::path::swapExtension(std::wstring_view p, std::wstring newExt)
+{
+	size_t idxDot = p.find_last_of(L'.');
+	if (idxDot != std::wstring::npos) [[likely]] {
+		std::wstring p2{p.substr(0, idxDot + (newExt[0] == L'.' ? 0 : 1))};
+		return p2 + newExt;
+	} else [[unlikely]] {
+		throw std::logic_error("File has no extension: " + str::toAnsi(p));
+	}
 }
 
 void lib::path::trimBackslash(std::wstring& p)

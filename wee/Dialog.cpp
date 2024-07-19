@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <memory>
 #include <system_error>
 #include <Windows.h>
 #include <CommCtrl.h>
@@ -107,6 +108,11 @@ int Dialog::SysDlgs::msgBox(std::wstring_view title, std::wstring_view mainInstr
 }
 
 
+struct ThreadPack final {
+	std::function<void()> callback;
+};
+static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
+
 INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 {
 	Dialog *pSelf = nullptr;
@@ -124,6 +130,9 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 		// Prevents processing before WM_INITDIALOG and after WM_NCDESTROY.
 		return FALSE;
 	}
+
+	if (uMsg == WM_THREAD)
+		pSelf->_processUiThread(lp);
 
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
 
@@ -155,4 +164,16 @@ void Dialog::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
 {
 	for (auto&& ctrlId : ctrlIds)
 		EnableWindow(GetDlgItem(hWnd(), ctrlId), doEnable);
+}
+
+void Dialog::runUiThread(std::function<void()> callback) const
+{
+	auto pPack = std::make_unique<ThreadPack>(std::move(callback));
+	SendMessageW(hWnd(), WM_THREAD, 0, reinterpret_cast<LPARAM>(pPack.release()));
+}
+
+void Dialog::_processUiThread(LPARAM lp) const
+{
+	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
+	pPack->callback();
 }

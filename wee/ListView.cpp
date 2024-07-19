@@ -375,7 +375,7 @@ const ListView& ListView::setImageList(const ImgList& imgList) const
 	switch (res.cx) {
 		case 16: lvsil = LVSIL_SMALL; break;
 		case 32: lvsil = LVSIL_NORMAL; break;
-		default: throw new std::logic_error("Invalid image list resolution");
+		default: throw std::logic_error("Invalid image list resolution");
 	}
 
 	ListView_SetImageList(hWnd(), imgList.hImg(), lvsil);

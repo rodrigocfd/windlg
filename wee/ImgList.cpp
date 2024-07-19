@@ -63,7 +63,7 @@ const ImgList& ImgList::addShell(std::initializer_list<std::wstring_view> extens
 				case 16:  shil = SHIL_SMALL; break;
 				case 48:  shil = SHIL_EXTRALARGE; break;
 				case 256: shil = SHIL_JUMBO; break;
-				default:  throw new std::logic_error("Invalid image list icon size");
+				default:  throw std::logic_error("Invalid image list icon size");
 			}
 
 			ComPtr<IImageList> comImg;

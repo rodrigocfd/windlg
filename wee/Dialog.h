@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -56,7 +57,11 @@ protected:
 	// Calls EnableWindow() for each child control.
 	void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
 
+	// Blocks the current thread and runs the function in the original UI thread.
+	void runUiThread(std::function<void()> callback) const;
+
 private:
+	void _processUiThread(LPARAM lp) const;
 	Window::_hWndPtr;
 };
 

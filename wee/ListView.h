@@ -30,14 +30,25 @@ public:
 
 		[[nodiscard]] constexpr int index() const { return _index; }
 		[[nodiscard]] std::vector<std::wstring> itemTexts() const;
+
+		// Returns HDF_CENTER, HDF_LEFT or HDF_RIGHT.
 		[[nodiscard]] int justification() const;
+
 		[[nodiscard]] std::vector<std::wstring> selectedItemTexts() const;
+
+		// Sets HDF_CENTER, HDF_LEFT or HDF_RIGHT.
 		const Column& setJustification(WORD hdf) const;
+
+		// Sets HDF_SORTUP (ascending) or HDF_SORTDOWN (descending).
 		const Column& setSortArrow(int hdf) const;
+
 		const Column& setText(std::wstring_view text) const;
 		const Column& setWidth(UINT width) const;
 		const Column& setWidthToFill() const;
+
+		// Returns HDF_SORTUP (ascending) or HDF_SORTDOWN (descending).
 		[[nodiscard]] int sortArrow() const;
+
 		[[nodiscard]] std::wstring text() const;
 		[[nodiscard]] UINT width() const;
 	};
@@ -143,10 +154,15 @@ public:
 	ListView(HWND hParent, WORD listId) : NativeControl{hParent, listId} { }
 	ListView(Window* parent, WORD listId) : NativeControl{parent, listId} { }
 
+	// Sets LVS_EX_FULLROWSELECT extended style.
 	const ListView& setFullRowSelect(bool doSet = true) const;
+
 	const ListView& setImageList(const ImgList& imgList) const;
+
+	// Call once during WM_INITDIALOG.
 	const ListView& setSubclassBehavior() const;
 
+	// Call at the beginning of DLGPROC.
 	static void ProcessMessages(Dialog* parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId = 0);
 
 private:

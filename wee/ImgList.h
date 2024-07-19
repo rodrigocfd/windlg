@@ -20,14 +20,23 @@ public:
 
 	constexpr explicit ImgList(HIMAGELIST hImg) : _hImg{hImg} { }
 
-	const ImgList& addClone(HICON hIcon) const;
+	// Stores a copy of the HICON.
+	const ImgList& addCopy(HICON hIcon) const;
+
+	// Stores a HICON loaded with LoadImage().
 	const ImgList& addResource(WORD iconId, HINSTANCE hInst = nullptr) const;
+
+	// Stores the HICONs associated to the given file extensions, loaded with SHGetFileInfo().
 	const ImgList& addShell(std::initializer_list<std::wstring_view> extensions) const;
+
+	[[nodiscard]] UINT count() const;
 	ImgList& create(SIZE resolution, UINT ilcFlags = ILC_COLOR32, WORD szInitial = 1, WORD szGrow = 1);
+
+	// The destructor will call this method automatically.
 	void destroy() noexcept;
+
 	[[nodiscard]] constexpr HIMAGELIST hImg() const { return _hImg; }
 	[[nodiscard]] SIZE resolution() const;
-	[[nodiscard]] UINT size() const;
 };
 
 }

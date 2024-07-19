@@ -13,7 +13,7 @@ ImgList& ImgList::operator=(ImgList&& other) noexcept
 	return *this;
 }
 
-const ImgList& ImgList::addClone(HICON hIcon) const
+const ImgList& ImgList::addCopy(HICON hIcon) const
 {
 	ImageList_AddIcon(_hImg, hIcon);
 	return *this;
@@ -30,7 +30,7 @@ const ImgList& ImgList::addResource(WORD iconId, HINSTANCE hInst) const
 	if (!hIcon) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "LoadImage failed");
 	}
-	addClone(hIcon);
+	addCopy(hIcon);
 	DestroyIcon(hIcon);
 	return *this;
 }
@@ -43,7 +43,6 @@ const ImgList& ImgList::addShell(std::initializer_list<std::wstring_view> extens
 		WCHAR ext[16] = {L'\0'};
 		lstrcpyW(ext, L"*."); // prepend
 		lstrcatW(ext, extension.data());
-
 	
 		SHFILEINFOW shfi{};
 
@@ -54,7 +53,7 @@ const ImgList& ImgList::addShell(std::initializer_list<std::wstring_view> extens
 			if (!gfiOk) [[unlikely]] {
 				throw std::system_error(GetLastError(), std::system_category(), "SHGetFileInfo failed");
 			}
-			addClone(shfi.hIcon);
+			addCopy(shfi.hIcon);
 			if (shfi.hIcon) DestroyIcon(shfi.hIcon);
 		} else { // http://stackoverflow.com/a/30496252
 			int shil = 0;
@@ -77,11 +76,16 @@ const ImgList& ImgList::addShell(std::initializer_list<std::wstring_view> extens
 			if (!gfiOk) [[unlikely]] {
 				throw std::system_error(GetLastError(), std::system_category(), "SHGetFileInfo failed");
 			}
-			addClone(shfi.hIcon);
+			addCopy(shfi.hIcon);
 			if (shfi.hIcon) DestroyIcon(shfi.hIcon);
 		}
 	}
 	return *this;
+}
+
+UINT ImgList::count() const
+{
+	return ImageList_GetImageCount(_hImg);
 }
 
 ImgList& ImgList::create(SIZE resolution, UINT ilcFlags, WORD szInitial, WORD szGrow)
@@ -108,9 +112,4 @@ SIZE ImgList::resolution() const
 	SIZE res{};
 	ImageList_GetIconSize(_hImg, reinterpret_cast<int*>(&res.cx), reinterpret_cast<int*>(&res.cy));
 	return res;
-}
-
-UINT ImgList::size() const
-{
-	return ImageList_GetImageCount(_hImg);
 }

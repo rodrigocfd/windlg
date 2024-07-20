@@ -5,6 +5,7 @@
 
 namespace lib {
 
+// Image list used with common controls.
 class ImgList final {
 private:
 	HIMAGELIST _hImg = nullptr;

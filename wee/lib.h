@@ -17,6 +17,7 @@
 #include "Menu.h"
 #include "NativeControl.h"
 #include "path.h"
+#include "ProgressBar.h"
 #include "StatusBar.h"
 #include "str.h"
 #include "vec.h"

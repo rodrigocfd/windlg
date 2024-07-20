@@ -3,7 +3,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include <Windows.h>
 #include "Dialog.h"
 #include "ImgList.h"
 #include "NativeControl.h"

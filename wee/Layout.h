@@ -1,7 +1,6 @@
 #pragma once
 #include <optional>
 #include <vector>
-#include <Windows.h>
 #include "Dialog.h"
 
 namespace lib {

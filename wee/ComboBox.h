@@ -1,7 +1,6 @@
 #pragma once
 #include <optional>
 #include <string>
-#include <Windows.h>
 #include "NativeControl.h"
 
 namespace lib {

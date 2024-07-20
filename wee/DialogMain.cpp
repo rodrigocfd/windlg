@@ -9,18 +9,26 @@ using namespace lib;
 int DialogMain::runMain(HINSTANCE hInst, WORD dlgId, int cmdShow, WORD iconId, WORD accelTblId) const
 {
 	InitCommonControls();
-	_SetTimerSafety();
-	
-	if (!CreateDialogParamW(hInst, MAKEINTRESOURCEW(dlgId),
-			nullptr, Dialog::_DlgProc, reinterpret_cast<LPARAM>(this))) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateDialogParam failed");
-	}
+	try {
+		_SetTimerSafety();
 
-	HACCEL hAccel = _loadAccelTbl(hInst, accelTblId);
-	_setIcon(hInst, iconId);
-	ShowWindow(hWnd(), cmdShow);
-	int ret = _mainLoop(hAccel);
-	return ret;
+		if (!CreateDialogParamW(hInst, MAKEINTRESOURCEW(dlgId),
+				nullptr, Dialog::_DlgProc, reinterpret_cast<LPARAM>(this))) [[unlikely]] {
+			throw std::system_error(GetLastError(), std::system_category(), "CreateDialogParam failed");
+		}
+
+		HACCEL hAccel = _loadAccelTbl(hInst, accelTblId);
+		_setIcon(hInst, iconId);
+		ShowWindow(hWnd(), cmdShow);
+		return _mainLoop(hAccel);
+	}
+	catch (const std::invalid_argument& e) { MessageBoxA(nullptr, e.what(), "Uncaught invalid argument", MB_ICONERROR); }
+	catch (const std::logic_error& e)      { MessageBoxA(nullptr, e.what(), "Uncaught logic error", MB_ICONERROR); }
+	catch (const std::system_error& e)     { MessageBoxA(nullptr, e.what(), "Uncaught system error", MB_ICONERROR); }
+	catch (const std::runtime_error& e)    { MessageBoxA(nullptr, e.what(), "Uncaught runtime error", MB_ICONERROR); }
+	catch (const std::exception& e)        { MessageBoxA(nullptr, e.what(), "Uncaught exception", MB_ICONERROR); }
+
+	return 1;
 }
 
 void DialogMain::_SetTimerSafety()

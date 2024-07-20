@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <memory>
 #include <system_error>
+#include <thread>
 #include <Windows.h>
 #include <CommCtrl.h>
 #include <ShObjIdl.h>
@@ -110,6 +111,7 @@ int Dialog::SysDlgs::msgBox(std::wstring_view title, std::wstring_view mainInstr
 
 struct ThreadPack final {
 	std::function<void()> callback;
+	std::exception_ptr pCurExc;
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
 
@@ -131,8 +133,8 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 		return FALSE;
 	}
 
-	if (uMsg == WM_THREAD)
-		pSelf->_processUiThread(lp);
+	if (uMsg == WM_THREAD) // incoming from another thread through SendMessage()
+		pSelf->_runFromOtherThread(lp);
 
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
 
@@ -166,14 +168,57 @@ void Dialog::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
 		EnableWindow(GetDlgItem(hWnd(), ctrlId), doEnable);
 }
 
+void Dialog::runDetachedThread(std::function<void()> callback) const
+{
+	std::thread([cb = std::move(callback), this]() {
+		try {
+			cb();
+		} catch (...) {
+			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
+			SendMessageW(hWnd(), WM_THREAD, 0, reinterpret_cast<LPARAM>(pPack.release()));
+		}
+	}).detach();
+}
+
 void Dialog::runUiThread(std::function<void()> callback) const
 {
-	auto pPack = std::make_unique<ThreadPack>(std::move(callback));
+	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
 	SendMessageW(hWnd(), WM_THREAD, 0, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
-void Dialog::_processUiThread(LPARAM lp) const
+void Dialog::_runFromOtherThread(LPARAM lp) const
 {
 	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-	pPack->callback();
+	if (pPack->pCurExc) { // catching an exception from runDetachedThread()
+		try {
+			std::rethrow_exception(pPack->pCurExc);
+		} catch (...) {
+			_Lippincott();
+			PostQuitMessage(1);
+		}
+	} else { // from runUiThread()
+		try {
+			pPack->callback();
+		} catch (...) {
+			_Lippincott();
+			PostQuitMessage(1);
+		}
+	}
+}
+
+void Dialog::_Lippincott()
+{
+	LPCSTR caption = "Uncaught unknown exception";
+	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
+
+	// https://stackoverflow.com/a/48036486/6923555
+	try { throw; }
+	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
+	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
+	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
+	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
+	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
+	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
+
+	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }

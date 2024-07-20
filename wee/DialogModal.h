@@ -19,6 +19,7 @@ public:
 
 private:
 	Dialog::_DlgProc;
+	Dialog::_Lippincott;
 };
 
 }

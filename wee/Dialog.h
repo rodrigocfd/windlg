@@ -57,11 +57,17 @@ protected:
 	// Calls EnableWindow() for each child control.
 	void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
 
-	// Blocks the current thread and runs the function in the original UI thread.
+	// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
+	void runDetachedThread(std::function<void()> callback) const;
+
+	// Blocks the current thread and runs the function in the original UI thread. Catches uncaught exceptions.
 	void runUiThread(std::function<void()> callback) const;
 
 private:
-	void _processUiThread(LPARAM lp) const;
+	void _runFromOtherThread(LPARAM lp) const;
+protected:
+	static void _Lippincott();
+private:
 	Window::_hWndPtr;
 };
 

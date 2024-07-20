@@ -82,19 +82,3 @@ int DialogMain::_mainLoop(HACCEL hAccel) const
 	return static_cast<int>(msg.wParam); // this can be used as program return value
 }
 
-void DialogMain::_Lippincott()
-{
-	LPCSTR caption = "Uncaught unknown exception";
-	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
-
-	// https://stackoverflow.com/a/48036486/6923555
-	try { throw; }
-	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
-	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
-	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
-	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
-	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
-	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
-
-	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
-}

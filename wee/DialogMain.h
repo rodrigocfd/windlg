@@ -14,7 +14,7 @@ public:
 	DialogMain& operator=(const DialogMain&) = delete;
 	DialogMain& operator=(DialogMain&&) = delete;
 
-	// Creates the main dialog, and returns only after the dialog is closed.
+	// Creates the main dialog, and returns only after the dialog is closed. Catches uncaught exceptions.
 	int runMain(HINSTANCE hInst, WORD dlgId, int cmdShow, WORD iconId = 0, WORD accelTblId = 0) const;
 
 private:
@@ -22,8 +22,8 @@ private:
 	HACCEL _loadAccelTbl(HINSTANCE hInst, WORD accelTblId) const;
 	void _setIcon(HINSTANCE hInst, WORD iconId) const;
 	int _mainLoop(HACCEL hAccel) const;
-	static void _Lippincott();
 	Dialog::_DlgProc;
+	Dialog::_Lippincott;
 };
 
 }

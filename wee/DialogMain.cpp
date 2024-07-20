@@ -21,13 +21,9 @@ int DialogMain::runMain(HINSTANCE hInst, WORD dlgId, int cmdShow, WORD iconId, W
 		_setIcon(hInst, iconId);
 		ShowWindow(hWnd(), cmdShow);
 		return _mainLoop(hAccel);
+	} catch (...) {
+		_Lippincott();
 	}
-	catch (const std::invalid_argument& e) { MessageBoxA(nullptr, e.what(), "Uncaught invalid argument", MB_ICONERROR); }
-	catch (const std::logic_error& e)      { MessageBoxA(nullptr, e.what(), "Uncaught logic error", MB_ICONERROR); }
-	catch (const std::system_error& e)     { MessageBoxA(nullptr, e.what(), "Uncaught system error", MB_ICONERROR); }
-	catch (const std::runtime_error& e)    { MessageBoxA(nullptr, e.what(), "Uncaught runtime error", MB_ICONERROR); }
-	catch (const std::exception& e)        { MessageBoxA(nullptr, e.what(), "Uncaught exception", MB_ICONERROR); }
-
 	return 1;
 }
 
@@ -84,4 +80,21 @@ int DialogMain::_mainLoop(HACCEL hAccel) const
 	}
 
 	return static_cast<int>(msg.wParam); // this can be used as program return value
+}
+
+void DialogMain::_Lippincott()
+{
+	LPCSTR caption = "Uncaught unknown exception";
+	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
+
+	// https://stackoverflow.com/a/48036486/6923555
+	try { throw; }
+	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
+	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
+	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
+	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
+	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
+	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
+
+	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }

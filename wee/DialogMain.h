@@ -22,6 +22,7 @@ private:
 	HACCEL _loadAccelTbl(HINSTANCE hInst, WORD accelTblId) const;
 	void _setIcon(HINSTANCE hInst, WORD iconId) const;
 	int _mainLoop(HACCEL hAccel) const;
+	static void _Lippincott();
 	Dialog::_DlgProc;
 };
 

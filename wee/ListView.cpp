@@ -1,4 +1,4 @@
-#include <stdexcept>
+#include <system_error>
 #include <Windows.h>
 #include <CommCtrl.h>
 #include "ListView.h"
@@ -382,35 +382,32 @@ const ListView& ListView::setImageList(const ImgList& imgList) const
 	return *this;
 }
 
-const ListView& ListView::setSubclassBehavior() const
-{
-	if (!hWnd()) [[unlikely]] {
-		throw std::logic_error("Cannot set subclass behavior before setting the listview HWND");
-	}
-
-	SetWindowSubclass(hWnd(), _SubclassProc, 1, reinterpret_cast<DWORD_PTR>(this));
-	return *this;
-}
-
 void ListView::ProcessMessages(Dialog *parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId)
 {
-	if (uMsg == WM_NOTIFY) {
-		if (ListView list{parent, idList}; list.hWnd()) {
-			if (NMHDR* hdr = reinterpret_cast<NMHDR*>(lp); hdr->hwndFrom == list.hWnd()) {
+	if (uMsg == WM_INITDIALOG) {
+		if (ListView lv{parent, idList}; lv.hWnd()) [[likely]] {
+			static UINT idSubclass = 1;
+			if (!SetWindowSubclass(lv.hWnd(), _SubclassProc, idSubclass++, 0)) [[unlikely]] {
+				throw std::system_error(GetLastError(), std::system_category(), "SetWindowSubclass failed");
+			}
+		}
+	} else if (uMsg == WM_NOTIFY) {
+		if (ListView lv{parent, idList}; lv.hWnd()) [[likely]] {
+			if (NMHDR* hdr = reinterpret_cast<NMHDR*>(lp); hdr->hwndFrom == lv.hWnd()) {
 				if (hdr->code == LVN_KEYDOWN) {
 					NMLVKEYDOWN* lvkd = reinterpret_cast<NMLVKEYDOWN*>(lp);
 					bool hasCtrl = GetAsyncKeyState(VK_CONTROL);
 					bool hasShift = GetAsyncKeyState(VK_SHIFT);
 					if (hasCtrl && lvkd->wVKey == 'A') { // Ctrl+A
-						list.items.selectAll();
+						lv.items.selectAll();
 					} else if (contextMenuId && lvkd->wVKey == VK_APPS) { // context menu key
-						list._showContextMenu(contextMenuId, false, hasCtrl, hasShift);
+						lv._showContextMenu(contextMenuId, false, hasCtrl, hasShift);
 					}
 				} else if (hdr->code == NM_RCLICK && contextMenuId) {
 					NMITEMACTIVATE* ia = reinterpret_cast<NMITEMACTIVATE*>(lp);
 					bool hasCtrl = (ia->uKeyFlags & LVKF_CONTROL) != 0;
 					bool hasShift = (ia->uKeyFlags & LVKF_SHIFT) != 0;
-					list._showContextMenu(contextMenuId, true, hasCtrl, hasShift);
+					lv._showContextMenu(contextMenuId, true, hasCtrl, hasShift);
 				}
 			}
 		}

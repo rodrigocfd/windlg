@@ -158,9 +158,6 @@ public:
 
 	const ListView& setImageList(const ImgList& imgList) const;
 
-	// Call once during WM_INITDIALOG.
-	const ListView& setSubclassBehavior() const;
-
 	// Call at the beginning of DLGPROC.
 	static void ProcessMessages(Dialog* parent, WORD idList, UINT uMsg, WPARAM wp, LPARAM lp, WORD contextMenuId = 0);
 

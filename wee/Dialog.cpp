@@ -111,7 +111,7 @@ int Dialog::SysDlgs::msgBox(std::wstring_view title, std::wstring_view mainInstr
 
 struct ThreadPack final {
 	std::function<void()> callback;
-	std::exception_ptr pCurExc;
+	std::exception_ptr pCurExcep;
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
 
@@ -133,7 +133,7 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 		return FALSE;
 	}
 
-	if (uMsg == WM_THREAD) // incoming from another thread through SendMessage()
+	if (uMsg == WM_THREAD && wp == WM_THREAD) // incoming from another thread through SendMessage()
 		pSelf->_runFromOtherThread(lp);
 
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
@@ -170,12 +170,12 @@ void Dialog::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
 
 void Dialog::runDetachedThread(std::function<void()> callback) const
 {
-	std::thread([cb = std::move(callback), this]() {
+	std::thread([callback = std::move(callback), this]() {
 		try {
-			cb();
+			callback();
 		} catch (...) {
 			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
-			SendMessageW(hWnd(), WM_THREAD, 0, reinterpret_cast<LPARAM>(pPack.release()));
+			SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 		}
 	}).detach();
 }
@@ -183,15 +183,15 @@ void Dialog::runDetachedThread(std::function<void()> callback) const
 void Dialog::runUiThread(std::function<void()> callback) const
 {
 	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
-	SendMessageW(hWnd(), WM_THREAD, 0, reinterpret_cast<LPARAM>(pPack.release()));
+	SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
 void Dialog::_runFromOtherThread(LPARAM lp) const
 {
 	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-	if (pPack->pCurExc) { // catching an exception from runDetachedThread()
+	if (pPack->pCurExcep) { // catching an exception from runDetachedThread()
 		try {
-			std::rethrow_exception(pPack->pCurExc);
+			std::rethrow_exception(pPack->pCurExcep);
 		} catch (...) {
 			_Lippincott();
 			PostQuitMessage(1);

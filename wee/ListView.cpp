@@ -13,7 +13,7 @@ std::vector<std::wstring> ListView::Column::itemTexts() const
 	texts.reserve(num);
 
 	for (UINT i = 0; i < num; ++i)
-		texts.emplace_back(ListView{_hList}.items[0].text(_index));
+		texts.emplace_back(ListView{_hList}.items[i].text(_index));
 
 	return texts;
 }

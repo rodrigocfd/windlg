@@ -35,17 +35,17 @@ std::wstring lib::str::fmtBytes(size_t numBytes)
 {
 	constexpr size_t sz = 40;
 	if (numBytes < 1024)
-		return fmt<sz>(L"%zu bytes", numBytes);
+		return fmt(L"%zu bytes", numBytes);
 	else if (numBytes < 1024ull * 1024)
-		return fmt<sz>(L"%.2f KB", numBytes / 1024.);
+		return fmt(L"%.2f KB", numBytes / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024)
-		return fmt<sz>(L"%.2f MB", numBytes / 1024. / 1024.);
+		return fmt(L"%.2f MB", numBytes / 1024. / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024 * 1024)
-		return fmt<sz>(L"%.2f GB", numBytes / 1024. / 1024. / 1024.);
+		return fmt(L"%.2f GB", numBytes / 1024. / 1024. / 1024.);
 	else if (numBytes < 1024ull * 1024 * 1024 * 1024 * 1024)
-		return fmt<sz>(L"%.2f TB", numBytes / 1024. / 1024. / 1024. / 1024.);
+		return fmt(L"%.2f TB", numBytes / 1024. / 1024. / 1024. / 1024.);
 	else
-		return fmt<sz>(L"%.2f PB", numBytes / 1024. / 1024. / 1024. / 1024. / 1024.);
+		return fmt(L"%.2f PB", numBytes / 1024. / 1024. / 1024. / 1024. / 1024.);
 }
 
 LPCWSTR lib::str::guessLineBreak(std::wstring_view s)
@@ -303,4 +303,14 @@ void lib::str::trim(std::wstring& s)
 	std::copy(s.begin() + iFirst, // move the non-space chars back
 		s.begin() + iLast + 1, s.begin());
 	s.resize(iLast - iFirst + 1); // trim container size
+}
+
+LPCWSTR lib::str::_privfmt::fmtp(std::wstring_view val)
+{
+	return val.data();
+}
+
+LPCWSTR lib::str::_privfmt::fmtp(const std::wstring& val)
+{
+	return val.c_str();
 }

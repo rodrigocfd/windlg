@@ -34,14 +34,26 @@ void removeDiacritics(std::wstring& s);
 void trim(std::wstring& s);
 void trimNulls(std::wstring& s);
 
-template<size_t SZ>
-std::wstring fmt(std::wstring_view format, ...) {
-	WCHAR buf[SZ] = {L'\0'};
-	va_list argPtr;
-	va_start(argPtr, format);
-	std::vswprintf(buf, ARRAYSIZE(buf), format.data(), argPtr);
-	va_end(argPtr);
-	return {buf};
+namespace _privfmt {
+	template<typename T>
+	[[nodiscard]] T fmtp(T val) {
+		static_assert(!std::is_same_v<T, const char*>, "Non-wide char* being used on str::fmt(), str::toWide() can fix it.");
+		static_assert(!std::is_same_v<T, std::string_view>, "Non-wide std::string_view being used on str::fmt(), str::toWide() can fix it.");
+		static_assert(!std::is_same_v<T, std::string>, "Non-wide std::string being used on str::fmt(), str::toWide() can fix it.");
+		return val;
+	}
+	[[nodiscard]] LPCWSTR fmtp(std::wstring_view val);
+	[[nodiscard]] LPCWSTR fmtp(const std::wstring& val);
+}
+
+// String-safe wrapper to std::swprintf().
+template<typename... T>
+[[nodiscard]] std::wstring fmt(std::wstring_view format, const T&... args) {
+	size_t len = std::swprintf(nullptr, 0, format.data(), _privfmt::fmtp(args)...);
+	std::wstring buf(len + 1, L'\0'); // room for terminating null
+	std::swprintf(buf.data(), len + 1, format.data(), _privfmt::fmtp(args)...);
+	buf.resize(len); // remove terminating null
+	return buf;
 }
 
 }

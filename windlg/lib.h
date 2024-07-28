@@ -1,3 +1,7 @@
+// WinDlg
+// C++20 minimalist, fast Win32 GUI library for dialog windows.
+// https://github.com/rodrigocfd/windlg
+
 #pragma once
 #include "CheckRadio.h"
 #include "Com.h"

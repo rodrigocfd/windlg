@@ -4,17 +4,16 @@
 #include "str.h"
 using namespace lib;
 
-std::optional<UINT> lib::ini::readInt(std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
+UINT lib::ini::readInt(std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
 {
 	UINT val = GetPrivateProfileIntW(section.data(), key.data(), 0, iniPath.data());
 	if (GetLastError() == ERROR_FILE_NOT_FOUND) [[unlikely]] {
-		return std::nullopt;
+		throw std::invalid_argument(str::toAnsi( str::fmt(L"INI entry not found: %s / %s", section, key) ));
 	}
 	return {val};
 }
 
-std::optional<std::wstring> lib::ini::readStr(
-	std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
+std::wstring lib::ini::readStr(std::wstring_view iniPath, std::wstring_view section, std::wstring_view key)
 {
 	UINT curBufSz = str::SSO_LEN;
 	std::wstring buf(curBufSz, L'\0');
@@ -31,7 +30,7 @@ std::optional<std::wstring> lib::ini::readStr(
 			buf.resize(curBufSz, L'\0');
 			break;
 		[[unlikely]] case ERROR_FILE_NOT_FOUND:
-			return std::nullopt;
+			throw std::invalid_argument(str::toAnsi( str::fmt(L"INI entry not found: %s / %s", section, key) ));
 		[[unlikely]] default:
 			throw std::system_error(err, std::system_category(), "GetPrivateProfileString failed");
 		}

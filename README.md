@@ -12,7 +12,10 @@ Add all library files under your compilation tree and include the single header 
 #include <windlg/lib.h>
 ```
 
-For a real-world example, see [vscode-font-patch](https://github.com/rodrigocfd/vscode-font-patch).
+Real-world examples:
+
+* [flac-lame-frontend](https://github.com/rodrigocfd/flac-lame-frontend/tree/cpp-v3)
+* [vscode-font-patch](https://github.com/rodrigocfd/vscode-font-patch/tree/cpp-v3.x)
 
 ## License
 

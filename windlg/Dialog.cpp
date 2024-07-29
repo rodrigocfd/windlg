@@ -9,6 +9,52 @@
 #include "Com.h"
 using namespace lib;
 
+struct ThreadPack final {
+	std::function<void()> callback;
+	std::exception_ptr pCurExcep;
+};
+static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
+
+std::vector<std::wstring> Dialog::DialogFacilities::droppedFiles(HDROP hDrop) const
+{
+	UINT count = DragQueryFileW(hDrop, 0xffff'ffff, nullptr, 0);
+	std::vector<std::wstring> paths;
+	paths.reserve(count);
+
+	for (UINT i = 0; i < count; ++i) {
+		WCHAR buf[MAX_PATH + 1] = {L'\0'};
+		DragQueryFileW(hDrop, i, buf, MAX_PATH + 1);
+		paths.emplace_back(buf);
+	}
+
+	DragFinish(hDrop);
+	return paths;
+}
+
+void Dialog::DialogFacilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
+{
+	for (auto&& ctrlId : ctrlIds)
+		EnableWindow(GetDlgItem(_pDlg->hWnd(), ctrlId), doEnable);
+}
+
+void Dialog::DialogFacilities::runDetachedThread(std::function<void()> callback) const
+{
+	std::thread([callback = std::move(callback), this]() {
+		try {
+			callback();
+		} catch (...) {
+			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
+			SendMessageW(_pDlg->hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
+		}
+	}).detach();
+}
+
+void Dialog::DialogFacilities::runUiThread(std::function<void()> callback) const
+{
+	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
+	SendMessageW(_pDlg->hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
+}
+
 static std::vector<COMDLG_FILTERSPEC> _makeFilters(
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts)
 {
@@ -30,7 +76,7 @@ static std::wstring _shellItemPath(const ComPtr<IShellItem>& shi)
 	return strPath;
 }
 
-std::optional<std::vector<std::wstring>> Dialog::SysDlgs::openFiles(
+std::optional<std::vector<std::wstring>> Dialog::DialogFacilities::showOpenFiles(
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const
 {
 	std::vector<COMDLG_FILTERSPEC> filters = _makeFilters(namesExts);
@@ -65,7 +111,7 @@ std::optional<std::vector<std::wstring>> Dialog::SysDlgs::openFiles(
 	}
 }
 
-std::optional<std::wstring> Dialog::SysDlgs::_openSave(bool isOpen, bool isFolder,
+std::optional<std::wstring> Dialog::DialogFacilities::_showOpenSave(bool isOpen, bool isFolder,
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const
 {
 	std::vector<COMDLG_FILTERSPEC> filters = _makeFilters(namesExts);
@@ -87,7 +133,7 @@ std::optional<std::wstring> Dialog::SysDlgs::_openSave(bool isOpen, bool isFolde
 	}
 }
 
-int Dialog::SysDlgs::msgBox(std::wstring_view title, std::wstring_view mainInstruction,
+int Dialog::DialogFacilities::msgBox(std::wstring_view title, std::wstring_view mainInstruction,
 	std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const
 {
 	TASKDIALOGCONFIG tdc = {
@@ -108,12 +154,6 @@ int Dialog::SysDlgs::msgBox(std::wstring_view title, std::wstring_view mainInstr
 	return pnButton;
 }
 
-
-struct ThreadPack final {
-	std::function<void()> callback;
-	std::exception_ptr pCurExcep;
-};
-static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
 
 INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 {
@@ -144,46 +184,6 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 		userRet = TRUE;
 	}
 	return userRet;
-}
-
-std::vector<std::wstring> Dialog::droppedFiles(HDROP hDrop) const
-{
-	UINT count = DragQueryFileW(hDrop, 0xffff'ffff, nullptr, 0);
-	std::vector<std::wstring> paths;
-	paths.reserve(count);
-
-	for (UINT i = 0; i < count; ++i) {
-		WCHAR buf[MAX_PATH + 1] = {L'\0'};
-		DragQueryFileW(hDrop, i, buf, MAX_PATH + 1);
-		paths.emplace_back(buf);
-	}
-
-	DragFinish(hDrop);
-	return paths;
-}
-
-void Dialog::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
-{
-	for (auto&& ctrlId : ctrlIds)
-		EnableWindow(GetDlgItem(hWnd(), ctrlId), doEnable);
-}
-
-void Dialog::runDetachedThread(std::function<void()> callback) const
-{
-	std::thread([callback = std::move(callback), this]() {
-		try {
-			callback();
-		} catch (...) {
-			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
-			SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
-		}
-	}).detach();
-}
-
-void Dialog::runUiThread(std::function<void()> callback) const
-{
-	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
-	SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
 void Dialog::_runFromOtherThread(LPARAM lp) const

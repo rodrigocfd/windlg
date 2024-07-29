@@ -3,9 +3,16 @@
 
 namespace lib {
 
+class DialogMain;
+
+// Creates the main dialog, and returns only after the dialog is closed. Catches uncaught exceptions.
+int runMain(DialogMain& dlgObj, HINSTANCE hInst, WORD dlgId, int cmdShow, WORD iconId = 0, WORD accelTblId = 0);
+
 // Base to the main application window.
 class DialogMain : public Dialog {
 public:
+	friend int runMain(DialogMain&, HINSTANCE, WORD, int, WORD, WORD);
+
 	virtual ~DialogMain() { }
 
 	constexpr DialogMain() = default;
@@ -14,14 +21,7 @@ public:
 	DialogMain& operator=(const DialogMain&) = delete;
 	DialogMain& operator=(DialogMain&&) = delete;
 
-	// Creates the main dialog, and returns only after the dialog is closed. Catches uncaught exceptions.
-	int runMain(HINSTANCE hInst, WORD dlgId, int cmdShow, WORD iconId = 0, WORD accelTblId = 0) const;
-
 private:
-	static void _SetTimerSafety();
-	HACCEL _loadAccelTbl(HINSTANCE hInst, WORD accelTblId) const;
-	void _setIcon(HINSTANCE hInst, WORD iconId) const;
-	int _mainLoop(HACCEL hAccel) const;
 	Dialog::_DlgProc;
 	Dialog::_Lippincott;
 };

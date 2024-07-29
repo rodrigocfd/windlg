@@ -7,10 +7,10 @@
 
 static void _setTimerSafety()
 {
-	if (IsWindows8OrGreater()) {
+	if (IsWindows8OrGreater()) [[likely]] {
 		BOOL bVal = FALSE;
 		if (!SetUserObjectInformationW(GetCurrentProcess(),
-			UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bVal, sizeof(bVal))) [[unlikely]] { // SetTimer() safety
+				UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bVal, sizeof(bVal))) [[unlikely]] { // SetTimer() safety
 			throw std::system_error(GetLastError(), std::system_category(), "SetUserObjectInformation failed");
 		}
 	}

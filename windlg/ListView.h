@@ -22,7 +22,7 @@ public:
 		constexpr Column(const Column&) = default;
 		constexpr Column(Column&&) = default;
 		constexpr Column& operator=(const Column&) = default;
-		Column& operator=(Column&&) = delete;
+		constexpr Column& operator=(Column&&) = default;
 
 		constexpr Column(HWND hList, int index) : _hList{hList}, _index{index} { }
 		constexpr Column(ListView* owner, int index) : Column{owner->hWnd(), _index} { }
@@ -63,9 +63,9 @@ private:
 	public:
 		ColumnCollection() = delete;
 		constexpr ColumnCollection(const ColumnCollection&) = default;
-		ColumnCollection(ColumnCollection&&) = delete;
+		constexpr ColumnCollection(ColumnCollection&&) = default;
 		constexpr ColumnCollection& operator=(const ColumnCollection&) = default;
-		ColumnCollection& operator=(ColumnCollection&&) = delete;
+		constexpr ColumnCollection& operator=(ColumnCollection&&) = default;
 
 		[[nodiscard]] constexpr Column operator[](int index) const { return Column{_hList, index}; }
 
@@ -85,7 +85,7 @@ public:
 		constexpr Item(const Item&) = default;
 		constexpr Item(Item&&) = default;
 		constexpr Item& operator=(const Item&) = default;
-		Item& operator=(Item&&) = delete;
+		constexpr Item& operator=(Item&&) = default;
 
 		constexpr Item(HWND hList, int index) : _hList{hList}, _index{index} { }
 		constexpr Item(ListView* owner, int index) : Item{owner->hWnd(), index} { }
@@ -116,9 +116,9 @@ private:
 	public:
 		ItemCollection() = delete;
 		constexpr ItemCollection(const ItemCollection&) = default;
-		ItemCollection(ItemCollection&&) = delete;
+		constexpr ItemCollection(ItemCollection&&) = default;
 		constexpr ItemCollection& operator=(const ItemCollection&) = default;
-		ItemCollection& operator=(ItemCollection&&) = delete;
+		constexpr ItemCollection& operator=(ItemCollection&&) = default;
 
 		[[nodiscard]] constexpr Item operator[](int index) const { return Item{_hList, index}; }
 
@@ -145,9 +145,9 @@ public:
 
 	constexpr ListView() = default;
 	constexpr ListView(const ListView&) = default;
-	ListView(ListView&&) = delete;
+	constexpr ListView(ListView&&) = default;
 	constexpr ListView& operator=(const ListView&) = default;
-	ListView& operator=(ListView&&) = delete;
+	constexpr ListView& operator=(ListView&&) = default;
 
 	constexpr explicit ListView(HWND hList) : NativeControl{hList} { }
 	ListView(HWND hParent, WORD listId) : NativeControl{hParent, listId} { }

@@ -10,9 +10,9 @@ public:
 
 	constexpr NativeControl() = default;
 	constexpr NativeControl(const NativeControl&) = default;
-	NativeControl(NativeControl&&) = delete;
+	constexpr NativeControl(NativeControl&&) = default;
 	constexpr NativeControl& operator=(const NativeControl&) = default;
-	NativeControl& operator=(NativeControl&&) = delete;
+	constexpr NativeControl& operator=(NativeControl&&) = default;
 
 	constexpr explicit NativeControl(HWND hCtrl) : Window{hCtrl} { }
 	NativeControl(HWND hParent, WORD ctrlId);

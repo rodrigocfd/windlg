@@ -13,8 +13,8 @@ public:
 	class DialogFacilities final {
 	private:
 		friend Dialog;
-		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
-		constexpr DialogFacilities(Dialog *pDlg) : _pDlg{pDlg} { }
+		const Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+		constexpr DialogFacilities(const Dialog* pDlg) : _pDlg{pDlg} { }
 
 	public:
 		DialogFacilities() = delete;

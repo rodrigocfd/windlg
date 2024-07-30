@@ -10,9 +10,9 @@ public:
 
 	constexpr CheckRadio() = default;
 	constexpr CheckRadio(const CheckRadio&) = default;
-	CheckRadio(CheckRadio&&) = delete;
+	constexpr CheckRadio(CheckRadio&&) = default;
 	constexpr CheckRadio& operator=(const CheckRadio&) = default;
-	CheckRadio& operator=(CheckRadio&&) = delete;
+	constexpr CheckRadio& operator=(CheckRadio&&) = default;
 
 	constexpr explicit CheckRadio(HWND hCtrl) : NativeControl{hCtrl} { }
 	CheckRadio(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }

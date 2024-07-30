@@ -2,13 +2,6 @@
 #include "Window.h"
 using namespace lib;
 
-Window& Window::operator=(Window&& other) noexcept
-{
-	_hWnd = other._hWnd;
-	other._hWnd = nullptr;
-	return *this;
-}
-
 std::wstring Window::text() const
 {
 	UINT len = GetWindowTextLengthW(_hWnd);

@@ -19,10 +19,10 @@ public:
 		constexpr Part(const Part&) = default;
 		constexpr Part(Part&&) = default;
 		constexpr Part& operator=(const Part&) = default;
-		Part& operator=(Part&&) = delete;
+		constexpr Part& operator=(Part&&) = default;
 
 		constexpr Part(HWND hSb, int index) : _hSb{hSb}, _index{index} { }
-		constexpr Part(StatusBar* owner, int index) : Part{owner->hWnd(), index} { }
+		constexpr Part(const StatusBar* owner, int index) : Part{owner->hWnd(), index} { }
 
 		[[nodiscard]] constexpr int index() const { return _index; }
 		const Part& setIcon(HICON hIcon) const;
@@ -38,11 +38,12 @@ private:
 			UINT sizePixels = 0; // mutually exclusive
 			BYTE resizeWeight = 0;
 		};
-		HWND _hSb = nullptr;
+		
+		const StatusBar* _pSb = nullptr; // assumes StatusBar is immovable
 		std::vector<PartData> _partsData;
 		std::vector<int> _rightEdges;
 
-		constexpr explicit PartCollection(HWND hSb) : _hSb{hSb} { }
+		constexpr explicit PartCollection(const StatusBar* pSb) : _pSb{pSb} { }
 
 	public:
 		PartCollection() = delete;
@@ -51,7 +52,7 @@ private:
 		PartCollection& operator=(const PartCollection&) = delete;
 		PartCollection& operator=(PartCollection&&) = delete;
 
-		[[nodiscard]] constexpr Part operator[](int index) const { return Part{_hSb, index}; }
+		[[nodiscard]] constexpr Part operator[](int index) const { return Part{_pSb, index}; }
 		Part addFixed(UINT width, std::wstring_view text = L"") { return _addPart(PartData{width, 0}, text); }
 		Part addResizable(BYTE resizeWeight, std::wstring_view text = L"") { return _addPart(PartData{0, resizeWeight}, text); }
 		[[nodiscard]] constexpr UINT count() const { return static_cast<UINT>(_partsData.size()); }
@@ -63,7 +64,7 @@ private:
 	};
 
 public:
-	PartCollection parts{hWnd()};
+	PartCollection parts{this};
 
 	virtual ~StatusBar() { }
 
@@ -73,11 +74,10 @@ public:
 	StatusBar& operator=(const StatusBar&) = delete;
 	StatusBar& operator=(StatusBar&&) = delete;
 
-	constexpr explicit StatusBar(HWND hCtrl) : NativeControl{hCtrl} { }
-	StatusBar(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }
-	StatusBar(Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
-
+	// Creates a new StatusBar by calling CreateWindowEx().
 	const StatusBar& create(Dialog* parent, WORD ctrlId = 0);
+
+	// To be called during parent's WM_SIZE processing.
 	const StatusBar& resizeToParent(UINT cxParent);
 
 private:

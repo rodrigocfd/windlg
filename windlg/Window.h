@@ -14,9 +14,9 @@ public:
 
 	constexpr Window() = default;
 	constexpr Window(const Window& other) = default;
-	Window(Window&& other) noexcept { operator=(std::forward<Window>(other)); }
+	constexpr Window(Window&& other) = default;
 	constexpr Window& operator=(const Window&) = default;
-	Window& operator=(Window&& other) noexcept;
+	constexpr Window& operator=(Window&&) = default;
 
 	constexpr explicit Window(HWND hWnd) : _hWnd{hWnd} { }
 

@@ -12,9 +12,9 @@ public:
 
 	constexpr ProgressBar() = default;
 	constexpr ProgressBar(const ProgressBar&) = default;
-	ProgressBar(ProgressBar&&) = delete;
+	constexpr ProgressBar(ProgressBar&&) = default;
 	constexpr ProgressBar& operator=(const ProgressBar&) = default;
-	ProgressBar& operator=(ProgressBar&&) = delete;
+	constexpr ProgressBar& operator=(ProgressBar&&) = default;
 
 	constexpr explicit ProgressBar(HWND hCtrl) : NativeControl{hCtrl} { }
 	ProgressBar(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }

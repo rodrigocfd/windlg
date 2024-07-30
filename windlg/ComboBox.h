@@ -12,9 +12,9 @@ public:
 
 	constexpr ComboBox() = default;
 	constexpr ComboBox(const ComboBox&) = default;
-	ComboBox(ComboBox&&) = delete;
+	constexpr ComboBox(ComboBox&&) = default;
 	constexpr ComboBox& operator=(const ComboBox&) = default;
-	ComboBox& operator=(ComboBox&&) = delete;
+	constexpr ComboBox& operator=(ComboBox&&) = default;
 
 	constexpr explicit ComboBox(HWND hCtrl) : NativeControl{hCtrl} { }
 	ComboBox(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }

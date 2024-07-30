@@ -13,9 +13,9 @@ private:
 public:
 	constexpr Menu() = default;
 	constexpr Menu(const Menu&) = default;
-	Menu(Menu&& other) noexcept { operator=(std::forward<Menu>(other)); }
+	constexpr Menu(Menu&&) = default;
 	constexpr Menu& operator=(const Menu&) = default;
-	Menu& operator=(Menu&& other) noexcept;
+	constexpr Menu& operator=(Menu&&) = default;
 
 	constexpr explicit Menu(HMENU hMenu) : _hMenu{hMenu} { }
 	Menu(HINSTANCE hInst, WORD menuId);

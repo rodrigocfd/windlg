@@ -1,13 +1,6 @@
 #include "Menu.h"
 using namespace lib;
 
-Menu& Menu::operator=(Menu&& other) noexcept
-{
-	_hMenu = other._hMenu;
-	other._hMenu = nullptr;
-	return *this;
-}
-
 Menu::Menu(HINSTANCE hInst, WORD menuId)
 	: Menu{LoadMenuW(hInst, MAKEINTRESOURCEW(menuId))}
 {

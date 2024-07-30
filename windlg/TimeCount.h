@@ -21,9 +21,9 @@ private:
 public:
 	constexpr TimeCount() = default;
 	constexpr TimeCount(const TimeCount&) = default;
-	TimeCount(TimeCount&&) = delete;
+	constexpr TimeCount(TimeCount&&) = default;
 	constexpr TimeCount& operator=(const TimeCount&) = default;
-	TimeCount& operator=(TimeCount&&) = delete;
+	constexpr TimeCount& operator=(TimeCount&&) = default;
 
 	void start();
 	[[nodiscard]] Duration now() const;

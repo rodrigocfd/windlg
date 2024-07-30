@@ -37,7 +37,7 @@ StatusBar::Part StatusBar::PartCollection::_addPart(PartData partData, std::wstr
 	_resizeToParent(_parentWidth());
 	
 	UINT numParts = static_cast<UINT>(_partsData.size());
-	Part newPart{_hSb, static_cast<int>(numParts) - 1};
+	Part newPart{_pSb, static_cast<int>(numParts) - 1};
 	if (!text.empty()) newPart.setText(text);
 	return newPart;
 }
@@ -47,7 +47,7 @@ UINT StatusBar::PartCollection::_parentWidth() const
 	static int cx = 0; // cache, since parts are intended to be added during window creation only
 	if (!cx) {
 		RECT rc{};
-		GetClientRect(GetParent(_hSb), &rc);
+		GetClientRect(GetParent(_pSb->hWnd()), &rc);
 		cx = rc.right;
 	}
 	return cx;
@@ -55,7 +55,7 @@ UINT StatusBar::PartCollection::_parentWidth() const
 
 void StatusBar::PartCollection::_resizeToParent(UINT cxParent)
 {
-	SendMessageW(_hSb, WM_SIZE, 0, 0); // tell statusbar to fit parent
+	SendMessageW(_pSb->hWnd(), WM_SIZE, 0, 0); // tell statusbar to fit parent
 
 	// Find the space to be divided among variable-width parts,
 	// and total weight of variable-width parts.
@@ -77,7 +77,7 @@ void StatusBar::PartCollection::_resizeToParent(UINT cxParent)
 			_partsData[i].sizePixels :
 			static_cast<int>( (cxVariable / totalWeight) * _partsData[i].resizeWeight );
 	}
-	SendMessageW(_hSb, SB_SETPARTS,
+	SendMessageW(_pSb->hWnd(), SB_SETPARTS,
 		_rightEdges.size(), reinterpret_cast<LPARAM>(_rightEdges.data()));
 }
 
@@ -98,7 +98,6 @@ const StatusBar& StatusBar::create(Dialog* parent, WORD ctrlId)
 	}
 
 	*_hWndPtr() = hSb;
-	parts._hSb = hSb;
 	return *this;
 }
 

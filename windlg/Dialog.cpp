@@ -15,7 +15,7 @@ struct ThreadPack final {
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
 
-std::vector<std::wstring> Dialog::DialogFacilities::droppedFiles(HDROP hDrop) const
+std::vector<std::wstring> Dialog::Facilities::droppedFiles(HDROP hDrop) const
 {
 	UINT count = DragQueryFileW(hDrop, 0xffff'ffff, nullptr, 0);
 	std::vector<std::wstring> paths;
@@ -31,13 +31,13 @@ std::vector<std::wstring> Dialog::DialogFacilities::droppedFiles(HDROP hDrop) co
 	return paths;
 }
 
-void Dialog::DialogFacilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
+void Dialog::Facilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
 {
 	for (auto&& ctrlId : ctrlIds)
 		EnableWindow(GetDlgItem(_pDlg->hWnd(), ctrlId), doEnable);
 }
 
-void Dialog::DialogFacilities::runDetachedThread(std::function<void()> callback) const
+void Dialog::Facilities::runDetachedThread(std::function<void()> callback) const
 {
 	std::thread([callback = std::move(callback), this]() {
 		try {
@@ -49,7 +49,7 @@ void Dialog::DialogFacilities::runDetachedThread(std::function<void()> callback)
 	}).detach();
 }
 
-void Dialog::DialogFacilities::runUiThread(std::function<void()> callback) const
+void Dialog::Facilities::runUiThread(std::function<void()> callback) const
 {
 	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
 	SendMessageW(_pDlg->hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
@@ -76,7 +76,7 @@ static std::wstring _shellItemPath(const ComPtr<IShellItem>& shi)
 	return strPath;
 }
 
-std::optional<std::vector<std::wstring>> Dialog::DialogFacilities::showOpenFiles(
+std::optional<std::vector<std::wstring>> Dialog::Facilities::showOpenFiles(
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const
 {
 	std::vector<COMDLG_FILTERSPEC> filters = _makeFilters(namesExts);
@@ -111,7 +111,7 @@ std::optional<std::vector<std::wstring>> Dialog::DialogFacilities::showOpenFiles
 	}
 }
 
-std::optional<std::wstring> Dialog::DialogFacilities::_showOpenSave(bool isOpen, bool isFolder,
+std::optional<std::wstring> Dialog::Facilities::_showOpenSave(bool isOpen, bool isFolder,
 	std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const
 {
 	std::vector<COMDLG_FILTERSPEC> filters = _makeFilters(namesExts);
@@ -133,7 +133,7 @@ std::optional<std::wstring> Dialog::DialogFacilities::_showOpenSave(bool isOpen,
 	}
 }
 
-int Dialog::DialogFacilities::msgBox(std::wstring_view title, std::wstring_view mainInstruction,
+int Dialog::Facilities::msgBox(std::wstring_view title, std::wstring_view mainInstruction,
 	std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const
 {
 	TASKDIALOGCONFIG tdc = {

@@ -93,8 +93,7 @@ void CustomControl::_paintControlBorders(WPARAM wp, LPARAM lp)
 
 	RECT rc2{}; // clipping region; will draw only within this rectangle
 	HDC hdc = GetWindowDC(hWnd());
-	HTHEME htd = OpenThemeData(hWnd(), L"LISTVIEW");
-	if (htd) [[likely]] {
+	if (HTHEME htd = OpenThemeData(hWnd(), L"LISTVIEW"); htd) [[likely]] {
 		SetRect(&rc2, rc.left, rc.top, rc.left + 2, rc.bottom); // draw only the borders to avoid flickering
 		DrawThemeBackground(htd, hdc, LVP_LISTGROUP, 0, &rc, &rc2); // draw themed left border
 		SetRect(&rc2, rc.left, rc.top, rc.right, rc.top + 2);

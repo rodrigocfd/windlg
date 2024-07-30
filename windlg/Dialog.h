@@ -10,17 +10,17 @@ namespace lib {
 // Base to all dialog windows.
 class Dialog : public Window {
 public:
-	class DialogFacilities final {
+	class Facilities final {
 		friend Dialog;
 	private:
-		constexpr DialogFacilities(const Dialog* pDlg) : _pDlg{pDlg} { }
+		constexpr Facilities(const Dialog* pDlg) : _pDlg{pDlg} { }
 
 	public:
-		DialogFacilities() = delete;
-		DialogFacilities(const DialogFacilities&) = delete;
-		DialogFacilities(DialogFacilities&&) = delete;
-		DialogFacilities& operator=(const DialogFacilities&) = delete;
-		DialogFacilities& operator=(DialogFacilities&&) = delete;
+		Facilities() = delete;
+		Facilities(const Facilities&) = delete;
+		Facilities(Facilities&&) = delete;
+		Facilities& operator=(const Facilities&) = delete;
+		Facilities& operator=(Facilities&&) = delete;
 
 		// Calls DragQueryFile() for each file, then DragFinish().
 		[[nodiscard]] std::vector<std::wstring> droppedFiles(HDROP hDrop) const;
@@ -60,7 +60,7 @@ public:
 
 protected:
 	// Dialog facilities.
-	DialogFacilities dlg{this};
+	Facilities dlg{this};
 
 	virtual INT_PTR dlgProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class
 	static INT_PTR CALLBACK _DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp);

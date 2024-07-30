@@ -1,5 +1,3 @@
-#include <Windows.h>
-#include <CommCtrl.h>
 #include "ProgressBar.h"
 using namespace lib;
 

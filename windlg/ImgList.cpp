@@ -71,9 +71,8 @@ const ImgList& ImgList::addShell(std::initializer_list<std::wstring_view> extens
 				throw std::system_error(hr, std::system_category(), "SHGetImageList failed");
 			}
 
-			DWORD_PTR gfiOk = SHGetFileInfoW(ext, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi),
-				SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
-			if (!gfiOk) [[unlikely]] {
+			if (DWORD_PTR ok = SHGetFileInfoW(ext, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi),
+					SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX); !ok) [[unlikely]] {
 				throw std::system_error(GetLastError(), std::system_category(), "SHGetFileInfo failed");
 			}
 			addCopy(shfi.hIcon);
@@ -91,9 +90,8 @@ UINT ImgList::count() const
 ImgList& ImgList::create(SIZE resolution, UINT ilcFlags, WORD szInitial, WORD szGrow)
 {
 	destroy();
-	_hImg = ImageList_Create(resolution.cx, resolution.cy, ilcFlags,
-		static_cast<int>(szInitial), static_cast<int>(szGrow));
-	if (!_hImg) [[unlikely]] {
+	if (_hImg = ImageList_Create(resolution.cx, resolution.cy, ilcFlags,
+			static_cast<int>(szInitial), static_cast<int>(szGrow)); !_hImg) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "ImageList_Create failed");
 	}
 	return *this;

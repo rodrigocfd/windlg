@@ -10,9 +10,8 @@ int runMain(DialogMain& dlgObj, HINSTANCE hInst, WORD dlgId, int cmdShow, WORD i
 
 // Base to the main application window.
 class DialogMain : public Dialog {
-public:
 	friend int runMain(DialogMain&, HINSTANCE, WORD, int, WORD, WORD);
-
+public:
 	virtual ~DialogMain() { }
 
 	constexpr DialogMain() = default;

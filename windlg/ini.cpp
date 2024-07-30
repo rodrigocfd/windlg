@@ -24,7 +24,7 @@ std::wstring lib::ini::readStr(std::wstring_view iniPath, std::wstring_view sect
 		switch (err) {
 		case ERROR_SUCCESS:
 			str::trimNulls(buf);
-			return {buf};
+			return buf;
 		case ERROR_MORE_DATA:
 			curBufSz *= 2; // double the buffer size to try again
 			buf.resize(curBufSz, L'\0');

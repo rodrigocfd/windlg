@@ -50,7 +50,7 @@ private:
 
 	private:
 		struct PartData final {
-			UINT sizePixels = 0; // mutually exclusive
+			UINT sizePixels = 0; // mutually exclusive members
 			BYTE resizeWeight = 0;
 		};
 

@@ -13,10 +13,6 @@ namespace lib {
 class ListView final : public NativeControl {
 public:
 	class Column final {
-	private:
-		HWND _hList = nullptr;
-		int _index = -1;
-
 	public:
 		Column() = delete;
 		constexpr Column(const Column&) = default;
@@ -50,14 +46,16 @@ public:
 
 		[[nodiscard]] std::wstring text() const;
 		[[nodiscard]] UINT width() const;
+
+	private:
+		HWND _hList = nullptr;
+		int _index = -1;
 	};
 
 private:
 	class ColumnCollection final {
-	private:
 		friend ListView;
-		HWND _hList = nullptr;
-
+	private:
 		constexpr explicit ColumnCollection(HWND hList) : _hList{hList} { }
 
 	public:
@@ -72,14 +70,13 @@ private:
 		Column add(std::wstring_view text, UINT width) const;
 		const ColumnCollection& add(std::initializer_list<std::pair<std::wstring_view, UINT>> namesAndWidths) const;
 		[[nodiscard]] UINT count() const;
+
+	private:
+		HWND _hList = nullptr;
 	};
 
 public:
 	class Item final {
-	private:
-		HWND _hList = nullptr;
-		int _index = -1;
-
 	public:
 		Item() = delete;
 		constexpr Item(const Item&) = default;
@@ -103,14 +100,15 @@ public:
 	private:
 		LPARAM _data() const;
 		const Item& _setData(LPARAM data) const;
+
+		HWND _hList = nullptr;
+		int _index = -1;
 	};
 
 private:
 	class ItemCollection final {
-	private:
 		friend ListView;
-		HWND _hList = nullptr;
-
+	private:
 		constexpr explicit ItemCollection(HWND hList) : _hList{hList} { }
 
 	public:
@@ -135,6 +133,9 @@ private:
 		void selectAll(bool doSelect = true) const;
 		[[nodiscard]] std::vector<Item> selected() const;
 		void sort(std::function<int(Item, Item)> callback) const;
+
+	private:
+		HWND _hList = nullptr;
 	};
 
 public:

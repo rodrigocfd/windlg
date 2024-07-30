@@ -17,11 +17,6 @@ public:
 		WORD codePage;
 	};
 
-private:
-	std::vector<BYTE> _data;
-	std::span<const LangCp> _langsCps;
-
-public:
 	VersionInfo(const VersionInfo&) = delete;
 	VersionInfo(VersionInfo&&) = delete;
 	VersionInfo& operator=(const VersionInfo&) = delete;
@@ -37,6 +32,9 @@ public:
 
 private:
 	void _load(std::wstring_view exePath);
+
+	std::vector<BYTE> _data;
+	std::span<const LangCp> _langsCps;
 };
 
 }

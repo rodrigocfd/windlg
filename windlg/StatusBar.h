@@ -10,10 +10,6 @@ namespace lib {
 class StatusBar final : public NativeControl {
 public:
 	class Part final {
-	private:
-		HWND _hSb = nullptr;
-		int _index = -1;
-
 	public:
 		Part() = delete;
 		constexpr Part(const Part&) = default;
@@ -28,21 +24,16 @@ public:
 		const Part& setIcon(HICON hIcon) const;
 		const Part& setText(std::wstring_view text) const;
 		[[nodiscard]] std::wstring text() const;
+
+	private:
+		HWND _hSb = nullptr;
+		int _index = -1;
 	};
 
 private:
 	class PartCollection final {
-	private:
 		friend StatusBar;
-		struct PartData final {
-			UINT sizePixels = 0; // mutually exclusive
-			BYTE resizeWeight = 0;
-		};
-		
-		const StatusBar* _pSb = nullptr; // assumes StatusBar is immovable
-		std::vector<PartData> _partsData;
-		std::vector<int> _rightEdges;
-
+	private:
 		constexpr explicit PartCollection(const StatusBar* pSb) : _pSb{pSb} { }
 
 	public:
@@ -58,9 +49,18 @@ private:
 		[[nodiscard]] constexpr UINT count() const { return static_cast<UINT>(_partsData.size()); }
 
 	private:
+		struct PartData final {
+			UINT sizePixels = 0; // mutually exclusive
+			BYTE resizeWeight = 0;
+		};
+
 		Part _addPart(PartData partData, std::wstring_view text);
 		UINT _parentWidth() const;
 		void _resizeToParent(UINT cxParent);
+
+		const StatusBar* _pSb = nullptr; // assumes StatusBar is immovable
+		std::vector<PartData> _partsData;
+		std::vector<int> _rightEdges;
 	};
 
 public:

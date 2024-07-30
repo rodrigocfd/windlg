@@ -6,9 +6,6 @@ namespace lib {
 
 // Simple HWND wrapper, base to all windows and controls.
 class Window {
-private:
-	HWND _hWnd = nullptr;
-
 public:
 	virtual ~Window() { }
 
@@ -26,6 +23,9 @@ public:
 
 protected:
 	[[nodiscard]] constexpr HWND* _hWndPtr() { return &_hWnd; }
+
+private:
+	HWND _hWnd = nullptr;
 };
 
 }

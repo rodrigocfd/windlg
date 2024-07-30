@@ -7,9 +7,6 @@ namespace lib {
 
 // Image list used with common controls.
 class ImgList final {
-private:
-	HIMAGELIST _hImg = nullptr;
-
 public:
 	~ImgList() { destroy(); }
 
@@ -38,6 +35,9 @@ public:
 
 	[[nodiscard]] constexpr HIMAGELIST hImg() const { return _hImg; }
 	[[nodiscard]] SIZE resolution() const;
+
+private:
+	HIMAGELIST _hImg = nullptr;
 };
 
 }

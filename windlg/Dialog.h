@@ -11,9 +11,8 @@ namespace lib {
 class Dialog : public Window {
 public:
 	class DialogFacilities final {
-	private:
 		friend Dialog;
-		const Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+	private:
 		constexpr DialogFacilities(const Dialog* pDlg) : _pDlg{pDlg} { }
 
 	public:
@@ -47,6 +46,8 @@ public:
 	private:
 		[[nodiscard]] std::optional<std::wstring> _showOpenSave(bool isOpen, bool isFolder,
 			std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
+
+		const Dialog* _pDlg = nullptr; // assumes Dialog is immovable
 	};
 
 	virtual ~Dialog() { }
@@ -63,12 +64,10 @@ protected:
 
 	virtual INT_PTR dlgProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class
 	static INT_PTR CALLBACK _DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp);
+	static void _Lippincott();
 
 private:
 	void _runFromOtherThread(LPARAM lp) const;
-protected:
-	static void _Lippincott();
-private:
 	Window::_hWndPtr;
 };
 

@@ -7,9 +7,6 @@ namespace lib {
 
 // Simple HMENU wrapper.
 class Menu final {
-private:
-	HMENU _hMenu = nullptr;
-
 public:
 	constexpr Menu() = default;
 	constexpr Menu(const Menu&) = default;
@@ -29,6 +26,9 @@ public:
 	void setDefaultItemByPos(UINT pos) const;
 	void showAtPoint(int x, int y, HWND hParent, HWND hWndCoordsRelativeTo) const;
 	[[nodiscard]] Menu subMenu(UINT pos) const;
+
+private:
+	HMENU _hMenu = nullptr;
 };
 
 }

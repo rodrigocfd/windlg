@@ -186,6 +186,23 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 	return userRet;
 }
 
+void Dialog::_Lippincott()
+{
+	LPCSTR caption = "Uncaught unknown exception";
+	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
+
+	// https://stackoverflow.com/a/48036486/6923555
+	try { throw; }
+	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
+	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
+	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
+	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
+	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
+	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
+
+	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
+}
+
 void Dialog::_runFromOtherThread(LPARAM lp) const
 {
 	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
@@ -204,21 +221,4 @@ void Dialog::_runFromOtherThread(LPARAM lp) const
 			PostQuitMessage(1);
 		}
 	}
-}
-
-void Dialog::_Lippincott()
-{
-	LPCSTR caption = "Uncaught unknown exception";
-	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
-
-	// https://stackoverflow.com/a/48036486/6923555
-	try { throw; }
-	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
-	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
-	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
-	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
-	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
-	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
-
-	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }

@@ -14,11 +14,6 @@ public:
 		WORD hr = 0;
 	};
 
-private:
-	static LONGLONG _Freq;
-	LONGLONG _t0 = 0;
-
-public:
 	constexpr TimeCount() = default;
 	constexpr TimeCount(const TimeCount&) = default;
 	constexpr TimeCount(TimeCount&&) = default;
@@ -27,6 +22,10 @@ public:
 
 	void start();
 	[[nodiscard]] Duration now() const;
+
+private:
+	static LONGLONG _Freq;
+	LONGLONG _t0 = 0;
 };
 
 }

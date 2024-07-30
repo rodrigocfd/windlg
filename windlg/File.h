@@ -17,10 +17,6 @@ public:
 		SYSTEMTIME creation{}, lastAccess{}, lastWrite{};
 	};
 
-private:
-	HANDLE _hFile = nullptr;
-
-public:
 	~File() { close(); }
 
 	constexpr File() = default;
@@ -46,6 +42,9 @@ public:
 
 	static void EraseAndWrite(std::wstring_view path, std::span<BYTE> contents);
 	static void EraseAndWriteStr(std::wstring_view path, std::wstring_view contents);
+
+private:
+	HANDLE _hFile = nullptr;
 };
 
 }

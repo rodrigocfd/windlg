@@ -6,9 +6,6 @@ namespace lib {
 
 // Loads and unloads the COM stuff.
 class Com final {
-private:
-	HRESULT _hr = S_OK;
-
 public:
 	~Com();
 
@@ -24,6 +21,9 @@ public:
 
 	// Throws system_error if FAILED(hr).
 	static void Check(HRESULT hr, std::string_view funcName = "HRESULT");
+
+private:
+	HRESULT _hr = S_OK;
 };
 
 
@@ -31,9 +31,6 @@ public:
 template<typename T,
 	typename = std::enable_if_t<std::is_base_of_v<IUnknown, T>>>
 class ComPtr final {
-private:
-	T* _p = nullptr;
-
 public:
 	~ComPtr() { release(); }
 
@@ -85,6 +82,9 @@ public:
 			_p = nullptr;
 		}
 	}
+
+private:
+	T* _p = nullptr;
 };
 
 }

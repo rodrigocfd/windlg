@@ -11,13 +11,6 @@ class FileMapped final {
 public:
 	enum class Access { ExistingReadOnly, ExistingRW };
 
-private:
-	File _file;
-	HANDLE _hMap = nullptr;
-	LPVOID _pMem = nullptr;
-	size_t _sz = 0;
-
-public:
 	~FileMapped() { close(); }
 
 	constexpr FileMapped() = default;
@@ -40,6 +33,12 @@ public:
 
 	[[nodiscard]] static std::vector<BYTE> ReadAll(std::wstring_view path);
 	[[nodiscard]] static std::wstring ReadAllStr(std::wstring_view path);
+
+private:
+	File _file;
+	HANDLE _hMap = nullptr;
+	LPVOID _pMem = nullptr;
+	size_t _sz = 0;
 };
 
 }

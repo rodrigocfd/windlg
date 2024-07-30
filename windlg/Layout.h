@@ -10,19 +10,6 @@ class Layout final {
 public:
 	enum class Act { None, Repos, Resize };
 
-private:
-	struct ChildInfo final {
-		WORD ctrlId = 0;
-		Act horz = Act::None;
-		Act vert = Act::None;
-		std::optional<RECT> rcOrig{std::nullopt};
-	};
-
-	HWND _hParent = nullptr;
-	std::vector<ChildInfo> _ctrls;
-	SIZE _szParentOrig{};
-
-public:
 	constexpr Layout() = default;
 	Layout(const Layout&) = delete;
 	Layout(Layout&&) = delete;
@@ -33,7 +20,18 @@ public:
 	void autoArrange(Dialog* parent, UINT uMsg, WPARAM wp, LPARAM lp);
 
 private:
+	struct ChildInfo final {
+		WORD ctrlId = 0;
+		Act horz = Act::None;
+		Act vert = Act::None;
+		std::optional<RECT> rcOrig{std::nullopt};
+	};
+
 	void _rearrangeCtrls(UINT cxParent, UINT cyParent);
+
+	HWND _hParent = nullptr;
+	std::vector<ChildInfo> _ctrls;
+	SIZE _szParentOrig{};
 };
 
 }

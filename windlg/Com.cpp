@@ -2,6 +2,16 @@
 #include "Com.h"
 using namespace lib;
 
+void lib::checkHr(HRESULT hr, std::string_view funcName)
+{
+	if (FAILED(hr)) [[unlikely]] {
+		std::string t{funcName};
+		t.append(" failed");
+		throw std::system_error(GetLastError(), std::system_category(), t);
+	}
+}
+
+
 Com::~Com()
 {
 	CoUninitialize();
@@ -9,15 +19,16 @@ Com::~Com()
 
 Com::Com(DWORD coInit)
 {
-	_hr = CoInitializeEx(nullptr, coInit);
-	Check(_hr, "CoInitializeEx");
+	checkHr(CoInitializeEx(nullptr, coInit), "CoInitializeEx");
 }
 
-void Com::Check(HRESULT hr, std::string_view funcName)
+
+ComOle::~ComOle()
 {
-	if (FAILED(hr)) [[unlikely]] {
-		std::string t{funcName};
-		t.append(" failed");
-		throw std::system_error(GetLastError(), std::system_category(), t);
-	}
+	OleUninitialize();
+}
+
+ComOle::ComOle()
+{
+	checkHr(OleInitialize(nullptr), "OleInitialize");
 }

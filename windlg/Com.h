@@ -4,7 +4,11 @@
 
 namespace lib {
 
-// Loads and unloads the COM stuff.
+// Throws system_error if FAILED(hr).
+void checkHr(HRESULT hr, std::string_view funcName = "HRESULT");
+
+
+// Calls CoInitializeEx() and CoUninitialize().
 class Com final {
 public:
 	~Com();
@@ -15,15 +19,20 @@ public:
 	Com& operator=(Com&&) = delete;
 
 	explicit Com(DWORD coInit = COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+};
 
-	// Value returned by the CoInitializeEx() call.
-	[[nodiscard]] constexpr HRESULT result() const { return _hr; }
 
-	// Throws system_error if FAILED(hr).
-	static void Check(HRESULT hr, std::string_view funcName = "HRESULT");
+// Calls OleInitialize() and OleUninitialize().
+class ComOle final {
+public:
+	~ComOle();
 
-private:
-	HRESULT _hr = S_OK;
+	ComOle(const ComOle&) = delete;
+	ComOle(ComOle&&) = delete;
+	ComOle& operator=(const ComOle&) = delete;
+	ComOle& operator=(ComOle&&) = delete;
+
+	ComOle();
 };
 
 
@@ -63,7 +72,7 @@ public:
 	// Creates the COM pointer with CoCreateInstance().
 	void coCreateInstance(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) {
 		release();
-		Com::Check(CoCreateInstance(clsid, nullptr, clsctx, IID_PPV_ARGS(&_p)), "CoCreateInstance");
+		checkHr(CoCreateInstance(clsid, nullptr, clsctx, IID_PPV_ARGS(&_p)), "CoCreateInstance");
 	}
 
 	// Creates the COM pointer with QueryInterface().
@@ -71,7 +80,7 @@ public:
 		typename = std::enable_if_t<std::is_base_of_v<IUnknown, Q>>>
 	[[nodiscard]] ComPtr<Q> queryInterface() const {
 		Q* pQueried = nullptr;
-		Com::Check(_p->QueryInterface(IID_PPV_ARGS(&pQueried)), "QueryInterface");
+		checkHr(_p->QueryInterface(IID_PPV_ARGS(&pQueried)), "QueryInterface");
 		return ComPtr<Q>{pQueried};
 	}
 

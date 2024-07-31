@@ -3,6 +3,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <Windows.h>
+#include <oleidl.h>
 #include "Window.h"
 
 namespace lib {
@@ -13,7 +15,7 @@ public:
 	class Facilities final {
 		friend Dialog;
 	private:
-		constexpr Facilities(const Dialog* pDlg) : _pDlg{pDlg} { }
+		constexpr Facilities(Dialog* pDlg) : _pDlg{pDlg} { }
 
 	public:
 		Facilities() = delete;
@@ -22,11 +24,11 @@ public:
 		Facilities& operator=(const Facilities&) = delete;
 		Facilities& operator=(Facilities&&) = delete;
 
-		// Calls DragQueryFile() for each file, then DragFinish().
-		[[nodiscard]] std::vector<std::wstring> droppedFiles(HDROP hDrop) const;
-
 		// Calls EnableWindow() for each child control.
 		void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
+
+		// Calls RegisterDragDrop() to enable onDropTarget() callback. Don't forget to instantiate lib::ComOle.
+		void registerDragDrop() const;
 
 		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
 		void runDetachedThread(std::function<void()> callback) const;
@@ -47,7 +49,7 @@ public:
 		[[nodiscard]] std::optional<std::wstring> _showOpenSave(bool isOpen, bool isFolder,
 			std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
 
-		const Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
 	};
 
 	virtual ~Dialog() { }
@@ -63,12 +65,43 @@ protected:
 	Facilities dlg{this};
 
 	virtual INT_PTR dlgProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class
+	virtual void onDropTarget(const std::vector<std::wstring>& files) { }
 	static INT_PTR CALLBACK _DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp);
 	static void _Lippincott();
 
 private:
+	class DropTarget final : public IDropTarget {
+		friend Dialog;
+	private:
+		constexpr DropTarget(Dialog* pDlg) : _pDlg{pDlg} { }
+
+	public:
+		DropTarget(const DropTarget&) = delete;
+		DropTarget(DropTarget&&) = delete;
+		DropTarget& operator=(const DropTarget&) = delete;
+		DropTarget& operator=(DropTarget&&) = delete;
+
+		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
+		ULONG STDMETHODCALLTYPE AddRef() override;
+		ULONG STDMETHODCALLTYPE Release() override;
+
+		HRESULT STDMETHODCALLTYPE DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) override;
+		HRESULT STDMETHODCALLTYPE DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) override;
+		HRESULT STDMETHODCALLTYPE DragLeave() override { return S_OK; }
+		HRESULT STDMETHODCALLTYPE Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) override;
+
+	private:
+		std::vector<std::wstring> _getDropped(HDROP hDrop) const;
+
+		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+		LONG _refCount = 0;
+	};
+
 	void _runFromOtherThread(LPARAM lp) const;
 	Window::_hWndPtr;
+
+	DropTarget _dropTarget{this};
+	bool _usingDropTarget = false;
 };
 
 }

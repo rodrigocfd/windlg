@@ -15,26 +15,30 @@ struct ThreadPack final {
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff;
 
-std::vector<std::wstring> Dialog::Facilities::droppedFiles(HDROP hDrop) const
-{
-	UINT count = DragQueryFileW(hDrop, 0xffff'ffff, nullptr, 0);
-	std::vector<std::wstring> paths;
-	paths.reserve(count);
-
-	for (UINT i = 0; i < count; ++i) {
-		WCHAR buf[MAX_PATH + 1] = {L'\0'};
-		DragQueryFileW(hDrop, i, buf, MAX_PATH + 1);
-		paths.emplace_back(buf);
-	}
-
-	DragFinish(hDrop);
-	return paths;
-}
 
 void Dialog::Facilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnable) const
 {
 	for (auto&& ctrlId : ctrlIds)
 		EnableWindow(GetDlgItem(_pDlg->hWnd(), ctrlId), doEnable);
+}
+
+void Dialog::Facilities::registerDragDrop() const
+{
+	if (_pDlg->_usingDropTarget) [[unlikely]] {
+		throw std::logic_error("RegisterDragDrop called twice");
+	}
+
+	DWORD exStyle = static_cast<DWORD>(GetWindowLongPtrW(_pDlg->hWnd(), GWL_EXSTYLE));
+	if (exStyle & WS_EX_ACCEPTFILES) [[unlikely]] {
+		throw std::invalid_argument("Do not use WS_EX_ACCEPTFILES");
+	}
+
+	if (HRESULT hr = RegisterDragDrop(_pDlg->hWnd(), &_pDlg->_dropTarget); hr == E_OUTOFMEMORY) [[unlikely]] {
+		throw std::runtime_error("RegisterDragDrop failed; did you instantiate lib::ComOle?");
+	} else if (FAILED(hr)) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "RegisterDragDrop failed");
+	}
+	_pDlg->_usingDropTarget = true;
 }
 
 void Dialog::Facilities::runDetachedThread(std::function<void()> callback) const
@@ -179,6 +183,7 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
 
 	if (uMsg == WM_NCDESTROY) {
+		if (pSelf->_usingDropTarget) RevokeDragDrop(hDlg);
 		SetWindowLongPtrW(hDlg, DWLP_USER, 0);
 		*pSelf->_hWndPtr() = nullptr;
 		userRet = TRUE;
@@ -221,4 +226,82 @@ void Dialog::_runFromOtherThread(LPARAM lp) const
 			PostQuitMessage(1);
 		}
 	}
+}
+
+
+HRESULT STDMETHODCALLTYPE Dialog::DropTarget::QueryInterface(REFIID riid, void** ppvObject)
+{
+	if (riid == IID_IDropTarget || riid == IID_IUnknown) {
+		AddRef();
+		*ppvObject = this;
+		return S_OK;
+	} else {
+		*ppvObject = nullptr;
+		return E_NOINTERFACE;
+	}
+}
+
+ULONG STDMETHODCALLTYPE Dialog::DropTarget::AddRef()
+{
+	return InterlockedIncrement(&_refCount);
+}
+
+ULONG STDMETHODCALLTYPE Dialog::DropTarget::Release()
+{
+	return InterlockedDecrement(&_refCount);
+}
+
+HRESULT STDMETHODCALLTYPE Dialog::DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
+{
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE Dialog::DropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
+{
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE Dialog::DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
+{
+	FORMATETC fetc = {
+		.cfFormat = CF_HDROP,
+		.ptd = nullptr,
+		.dwAspect = DVASPECT_CONTENT,
+		.lindex = -1,
+		.tymed = TYMED_HGLOBAL,
+	};
+	STGMEDIUM medium{};
+
+	if (HRESULT hr = pDataObj->GetData(&fetc, &medium); FAILED(hr)) {
+		*pdwEffect = DROPEFFECT_NONE;
+		return hr;
+	}
+
+	HGLOBAL hFiles = medium.hGlobal;
+	auto hDrop = reinterpret_cast<HDROP>(GlobalLock(hFiles));	
+	auto files = _getDropped(hDrop);
+	GlobalUnlock(hFiles);
+	ReleaseStgMedium(&medium);
+
+	_pDlg->onDropTarget(files);
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+std::vector<std::wstring> Dialog::DropTarget::_getDropped(HDROP hDrop) const
+{
+	UINT count = DragQueryFileW(hDrop, 0xffff'ffff, nullptr, 0);
+	std::vector<std::wstring> paths;
+	paths.reserve(count);
+
+	for (UINT i = 0; i < count; ++i) {
+		WCHAR buf[MAX_PATH + 1] = {L'\0'};
+		DragQueryFileW(hDrop, i, buf, MAX_PATH + 1);
+		paths.emplace_back(buf);
+	}
+
+	//DragFinish(hDrop); // will crash ReleaseStgMedium()
+	return paths;
 }

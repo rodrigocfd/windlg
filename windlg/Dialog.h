@@ -12,6 +12,10 @@ namespace lib {
 // Base to all dialog windows.
 class Dialog : public Window {
 public:
+	// Child control horizontal and vertical behavior.
+	enum class Act { None, Repos, Resize };
+
+private:
 	class Facilities final {
 	private:
 		constexpr Facilities(Dialog* pDlg) : _pDlg{pDlg} { }
@@ -26,8 +30,11 @@ public:
 		// Calls EnableWindow() for each child control.
 		void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
 
+		// Adds one or more controls to the automatic layout resizing and repositioning.
+		const Facilities& layout(Act horz, Act vert, std::initializer_list<WORD> ctrlIds) const;
+
 		// Calls RegisterDragDrop() to enable onDropTarget() callback. Don't forget to instantiate lib::ComOle.
-		void registerDragDrop() const;
+		const Facilities& registerDragDrop() const;
 
 		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
 		void runDetachedThread(std::function<void()> callback) const;
@@ -52,29 +59,9 @@ public:
 		friend Dialog;
 	};
 
-	virtual ~Dialog() { }
-
-	constexpr Dialog() = default;
-	Dialog(const Dialog&) = delete;
-	Dialog(Dialog&&) = delete;
-	Dialog& operator=(const Dialog&) = delete;
-	Dialog& operator=(Dialog&&) = delete;
-
-protected:
-	// Dialog facilities.
-	Facilities dlg{this};
-
-	virtual INT_PTR dlgProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class
-	virtual void onDropTarget(const std::vector<std::wstring>& files) { }
-	static INT_PTR CALLBACK _DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp);
-	static void _Lippincott();
-
-private:
 	class DropTarget final : public IDropTarget {
-	private:
-		constexpr DropTarget(Dialog* pDlg) : _pDlg{pDlg} { }
-
 	public:
+		constexpr DropTarget(Dialog* pDlg) : _pDlg{pDlg} { }
 		DropTarget(const DropTarget&) = delete;
 		DropTarget(DropTarget&&) = delete;
 		DropTarget& operator=(const DropTarget&) = delete;
@@ -94,14 +81,57 @@ private:
 
 		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
 		LONG _refCount = 0;
-		friend Dialog;
 	};
 
+	class Layout final {
+	public:
+		constexpr Layout(Dialog* pDlg) : _pDlg{pDlg} { }
+		Layout(const Layout&) = delete;
+		Layout(Layout&&) = delete;
+		Layout& operator=(const Layout&) = delete;
+		Layout& operator=(Layout&&) = delete;
+
+		void add(Act horz, Act vert, std::initializer_list<WORD> ctrlIds);
+		void processMsgs(UINT uMsg, WPARAM wp, LPARAM lp) const;
+
+	private:
+		struct ChildInfo final {
+			HWND hCtrl = nullptr;
+			Act horz = Act::None;
+			Act vert = Act::None;
+			RECT rcOrig{};
+		};
+
+		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+		std::vector<ChildInfo> _ctrls;
+		SIZE _szParentOrig{};
+	};
+
+public:
+	virtual ~Dialog() { }
+
+	constexpr Dialog() = default;
+	Dialog(const Dialog&) = delete;
+	Dialog(Dialog&&) = delete;
+	Dialog& operator=(const Dialog&) = delete;
+	Dialog& operator=(Dialog&&) = delete;
+
+protected:
+	// Dialog facilities.
+	Facilities dlg{this};
+
+	virtual INT_PTR dlgProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class
+	virtual void onDropTarget(const std::vector<std::wstring>& files) { }
+	static INT_PTR CALLBACK _DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp);
+	static void _Lippincott();
+
+private:
 	void _runFromOtherThread(LPARAM lp) const;
 	Window::_hWndPtr;
 
 	DropTarget _dropTarget{this};
 	bool _usingDropTarget = false;
+	Layout _layout{this};
 };
 
 }

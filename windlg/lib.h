@@ -15,7 +15,6 @@
 #include "FileMapped.h"
 #include "ImgList.h"
 #include "ini.h"
-#include "Layout.h"
 #include "ListView.h"
 #include "Menu.h"
 #include "NativeControl.h"

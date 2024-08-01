@@ -22,7 +22,13 @@ void Dialog::Facilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnab
 		EnableWindow(GetDlgItem(_pDlg->hWnd(), ctrlId), doEnable);
 }
 
-void Dialog::Facilities::registerDragDrop() const
+const Dialog::Facilities& Dialog::Facilities::layout(Act horz, Act vert, std::initializer_list<WORD> ctrlIds) const
+{
+	_pDlg->_layout.add(horz, vert, ctrlIds);
+	return *this;
+}
+
+const Dialog::Facilities& Dialog::Facilities::registerDragDrop() const
 {
 	if (_pDlg->_usingDropTarget) [[unlikely]] {
 		throw std::logic_error("RegisterDragDrop called twice");
@@ -39,6 +45,7 @@ void Dialog::Facilities::registerDragDrop() const
 		throw std::system_error(GetLastError(), std::system_category(), "RegisterDragDrop failed");
 	}
 	_pDlg->_usingDropTarget = true;
+	return *this;
 }
 
 void Dialog::Facilities::runDetachedThread(std::function<void()> callback) const
@@ -159,73 +166,56 @@ int Dialog::Facilities::msgBox(std::wstring_view title, std::wstring_view mainIn
 }
 
 
-INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
+void Dialog::Layout::add(Act horz, Act vert, std::initializer_list<WORD> ctrlIds)
 {
-	Dialog *pSelf = nullptr;
-	
-	if (uMsg == WM_INITDIALOG) {
-		pSelf = reinterpret_cast<Dialog*>(lp);
-		SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(pSelf));
-		*pSelf->_hWndPtr() = hDlg;
-	} else [[likely]] {
-		pSelf = reinterpret_cast<Dialog*>(GetWindowLongPtrW(hDlg, DWLP_USER));
+	if (horz == Act::None && vert == Act::None) [[unlikely]] { // if nothing to do, don't even bother adding it
+		return;
 	}
 
-	if (!pSelf) [[unlikely]] {
-		// No pointer stored, nothing is done.
-		// Prevents processing before WM_INITDIALOG and after WM_NCDESTROY.
-		return FALSE;
+	if (_ctrls.empty()) { // first controls being added
+		RECT rc{};
+		GetClientRect(_pDlg->hWnd(), &rc);
+		_szParentOrig = {.cx = rc.right, .cy = rc.bottom};
 	}
 
-	if (uMsg == WM_THREAD && wp == WM_THREAD) // incoming from another thread through SendMessage()
-		pSelf->_runFromOtherThread(lp);
-
-	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
-
-	if (uMsg == WM_NCDESTROY) {
-		if (pSelf->_usingDropTarget) RevokeDragDrop(hDlg);
-		SetWindowLongPtrW(hDlg, DWLP_USER, 0);
-		*pSelf->_hWndPtr() = nullptr;
-		userRet = TRUE;
+	for (auto&& ctrlId : ctrlIds) {
+		HWND hCtrl = GetDlgItem(_pDlg->hWnd(), ctrlId);
+		RECT rc{};
+		GetWindowRect(hCtrl, &rc);
+		ScreenToClient(_pDlg->hWnd(), reinterpret_cast<POINT*>(&rc));
+		ScreenToClient(_pDlg->hWnd(), reinterpret_cast<POINT*>(&rc.right));
+		_ctrls.emplace_back(hCtrl, horz, vert, rc);
 	}
-	return userRet;
 }
 
-void Dialog::_Lippincott()
+void Dialog::Layout::processMsgs(UINT uMsg, WPARAM wp, LPARAM lp) const
 {
-	LPCSTR caption = "Uncaught unknown exception";
-	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
+	if (_ctrls.empty() || uMsg != WM_SIZE || wp == SIZE_MINIMIZED) return;
 
-	// https://stackoverflow.com/a/48036486/6923555
-	try { throw; }
-	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
-	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
-	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
-	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
-	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
-	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
+	UINT cxParent = LOWORD(lp);
+	UINT cyParent = HIWORD(lp);
 
-	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
-}
-
-void Dialog::_runFromOtherThread(LPARAM lp) const
-{
-	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-	if (pPack->pCurExcep) { // catching an exception from runDetachedThread()
-		try {
-			std::rethrow_exception(pPack->pCurExcep);
-		} catch (...) {
-			_Lippincott();
-			PostQuitMessage(1);
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
+	for (auto& ctrl : _ctrls) {
+		UINT swp = SWP_NOZORDER;
+		if (ctrl.horz == Act::Repos && ctrl.vert == Act::Repos) { // reposition both horz & vert
+			swp |= SWP_NOSIZE;
+		} else if (ctrl.horz == Act::Resize && ctrl.vert == Act::Resize) { // resize both horz & vert
+			swp |= SWP_NOMOVE;
 		}
-	} else { // from runUiThread()
-		try {
-			pPack->callback();
-		} catch (...) {
-			_Lippincott();
-			PostQuitMessage(1);
-		}
+
+		DeferWindowPos(hdwp, ctrl.hCtrl, nullptr,
+			ctrl.horz == Act::Repos ? cxParent - _szParentOrig.cx + ctrl.rcOrig.left
+				: ctrl.rcOrig.left,
+			ctrl.vert == Act::Repos ? cyParent - _szParentOrig.cy + ctrl.rcOrig.top
+				: ctrl.rcOrig.top,
+			ctrl.horz == Act::Resize ? cxParent - _szParentOrig.cx + ctrl.rcOrig.right - ctrl.rcOrig.left
+				: ctrl.rcOrig.right - ctrl.rcOrig.left,
+			ctrl.vert == Act::Resize ? cyParent - _szParentOrig.cy + ctrl.rcOrig.bottom - ctrl.rcOrig.top
+				: ctrl.rcOrig.bottom - ctrl.rcOrig.top,
+			swp);
 	}
+	EndDeferWindowPos(hdwp);
 }
 
 
@@ -304,4 +294,76 @@ std::vector<std::wstring> Dialog::DropTarget::_getDropped(HDROP hDrop) const
 
 	//DragFinish(hDrop); // will crash ReleaseStgMedium()
 	return paths;
+}
+
+
+INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
+{
+	Dialog *pSelf = nullptr;
+	
+	if (uMsg == WM_INITDIALOG) {
+		pSelf = reinterpret_cast<Dialog*>(lp);
+		SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(pSelf));
+		*pSelf->_hWndPtr() = hDlg;
+	} else [[likely]] {
+		pSelf = reinterpret_cast<Dialog*>(GetWindowLongPtrW(hDlg, DWLP_USER));
+	}
+
+	if (!pSelf) [[unlikely]] {
+		// No pointer stored, nothing is done.
+		// Prevents processing before WM_INITDIALOG and after WM_NCDESTROY.
+		return FALSE;
+	}
+
+	pSelf->_layout.processMsgs(uMsg, wp, lp);
+
+	if (uMsg == WM_THREAD && wp == WM_THREAD) // incoming from another thread through SendMessage()
+		pSelf->_runFromOtherThread(lp);
+
+	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
+
+	if (uMsg == WM_NCDESTROY) {
+		if (pSelf->_usingDropTarget) RevokeDragDrop(hDlg);
+		SetWindowLongPtrW(hDlg, DWLP_USER, 0);
+		*pSelf->_hWndPtr() = nullptr;
+		userRet = TRUE;
+	}
+	return userRet;
+}
+
+void Dialog::_Lippincott()
+{
+	LPCSTR caption = "Uncaught unknown exception";
+	LPCSTR msg = "An unknown exception, not derived from std::exception, was thrown.";
+
+	// https://stackoverflow.com/a/48036486/6923555
+	try { throw; }
+	catch (const std::invalid_argument& e) { msg = e.what(); caption = "Uncaught invalid argument"; }
+	catch (const std::out_of_range& e)     { msg = e.what(); caption = "Uncaught out of range"; }
+	catch (const std::logic_error& e)      { msg = e.what(); caption = "Uncaught logic error"; }
+	catch (const std::system_error& e)     { msg = e.what(); caption = "Uncaught system error"; }
+	catch (const std::runtime_error& e)    { msg = e.what(); caption = "Uncaught runtime error"; }
+	catch (const std::exception& e)        { msg = e.what(); caption = "Uncaught generic error"; }
+
+	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
+}
+
+void Dialog::_runFromOtherThread(LPARAM lp) const
+{
+	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
+	if (pPack->pCurExcep) { // catching an exception from runDetachedThread()
+		try {
+			std::rethrow_exception(pPack->pCurExcep);
+		} catch (...) {
+			_Lippincott();
+			PostQuitMessage(1);
+		}
+	} else { // from runUiThread()
+		try {
+			pPack->callback();
+		} catch (...) {
+			_Lippincott();
+			PostQuitMessage(1);
+		}
+	}
 }

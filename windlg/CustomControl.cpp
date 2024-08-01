@@ -5,8 +5,7 @@
 #pragma comment(lib, "UxTheme.lib")
 using namespace lib;
 
-void CustomControl::create(Dialog* parent, int x, int y, UINT cx, UINT cy,
-	DWORD bgColor, DWORD style, DWORD exStyle, WORD ctrlId) const
+void CustomControl::create(Dialog* parent, CreateOpts createOpts) const
 {
 	if (hWnd()) [[unlikely]] {
 		throw std::logic_error("Cannot create CustomControl twice");
@@ -19,7 +18,7 @@ void CustomControl::create(Dialog* parent, int x, int y, UINT cx, UINT cy,
 		.lpfnWndProc = _WndProc,
 		.hInstance = hInst,
 		.hCursor = LoadCursorW(nullptr, IDC_ARROW),
-		.hbrBackground = reinterpret_cast<HBRUSH>(static_cast<DWORD_PTR>(bgColor) + 1),
+		.hbrBackground = reinterpret_cast<HBRUSH>(static_cast<DWORD_PTR>(createOpts.bgColor) + 1),
 	};
 
 	WCHAR uniqueClassName[80] = {L'\0'};
@@ -38,8 +37,9 @@ void CustomControl::create(Dialog* parent, int x, int y, UINT cx, UINT cy,
 		}
 	}
 
-	if (!CreateWindowExW(exStyle, MAKEINTATOM(atom), nullptr, style,
-			x, y, cx, cy, parent->hWnd(), reinterpret_cast<HMENU>(ctrlId), hInst,
+	if (!CreateWindowExW(createOpts.exStyle, MAKEINTATOM(atom), nullptr, createOpts.style,
+			createOpts.x, createOpts.y, createOpts.cx, createOpts.cy,
+			parent->hWnd(), reinterpret_cast<HMENU>(createOpts.ctrlId), hInst,
 			reinterpret_cast<LPVOID>(const_cast<CustomControl*>(this)))) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed");
 	}

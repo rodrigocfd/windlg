@@ -48,7 +48,7 @@ private:
 		[[nodiscard]] std::optional<std::wstring> showOpenFolder() const { return _showOpenSave(true, true, {}); }
 		
 		// Calls TaskDialogIndirect(); returns IDOK, IDCANCEL, etc.
-		int msgBox(std::wstring_view title, std::wstring_view mainInstruction,
+		int msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
 			std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const;
 
 	private:
@@ -77,7 +77,7 @@ private:
 		HRESULT STDMETHODCALLTYPE Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) override;
 
 	private:
-		std::vector<std::wstring> _getDropped(HDROP hDrop) const;
+		[[nodiscard]] std::vector<std::wstring> _getDropped(HDROP hDrop) const;
 
 		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
 		LONG _refCount = 0;

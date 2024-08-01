@@ -144,7 +144,7 @@ std::optional<std::wstring> Dialog::Facilities::_showOpenSave(bool isOpen, bool 
 	}
 }
 
-int Dialog::Facilities::msgBox(std::wstring_view title, std::wstring_view mainInstruction,
+int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
 	std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const
 {
 	TASKDIALOGCONFIG tdc = {
@@ -154,7 +154,7 @@ int Dialog::Facilities::msgBox(std::wstring_view title, std::wstring_view mainIn
 		.dwCommonButtons = tdcbfButtons,
 		.pszWindowTitle = title.data(),
 		.pszMainIcon = tdIcon,
-		.pszMainInstruction = mainInstruction.empty() ? nullptr : mainInstruction.data(),
+		.pszMainInstruction = mainInstruction.has_value() ? mainInstruction.value().data() : nullptr,
 		.pszContent = body.data(),
 	};
 

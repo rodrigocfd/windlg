@@ -32,7 +32,6 @@ public:
 
 private:
 	class PartCollection final {
-		friend StatusBar;
 	private:
 		constexpr explicit PartCollection(const StatusBar* pSb) : _pSb{pSb} { }
 
@@ -61,6 +60,7 @@ private:
 		const StatusBar* _pSb = nullptr; // assumes StatusBar is immovable
 		std::vector<PartData> _partsData;
 		std::vector<int> _rightEdges;
+		friend StatusBar;
 	};
 
 public:

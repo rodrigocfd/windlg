@@ -54,7 +54,6 @@ public:
 
 private:
 	class ColumnCollection final {
-		friend ListView;
 	private:
 		constexpr explicit ColumnCollection(HWND hList) : _hList{hList} { }
 
@@ -73,6 +72,7 @@ private:
 
 	private:
 		HWND _hList = nullptr;
+		friend ListView;
 	};
 
 public:
@@ -107,7 +107,6 @@ public:
 
 private:
 	class ItemCollection final {
-		friend ListView;
 	private:
 		constexpr explicit ItemCollection(HWND hList) : _hList{hList} { }
 
@@ -136,6 +135,7 @@ private:
 
 	private:
 		HWND _hList = nullptr;
+		friend ListView;
 	};
 
 public:

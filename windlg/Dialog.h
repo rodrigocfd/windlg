@@ -13,7 +13,6 @@ namespace lib {
 class Dialog : public Window {
 public:
 	class Facilities final {
-		friend Dialog;
 	private:
 		constexpr Facilities(Dialog* pDlg) : _pDlg{pDlg} { }
 
@@ -50,6 +49,7 @@ public:
 			std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
 
 		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
+		friend Dialog;
 	};
 
 	virtual ~Dialog() { }
@@ -71,7 +71,6 @@ protected:
 
 private:
 	class DropTarget final : public IDropTarget {
-		friend Dialog;
 	private:
 		constexpr DropTarget(Dialog* pDlg) : _pDlg{pDlg} { }
 
@@ -95,6 +94,7 @@ private:
 
 		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
 		LONG _refCount = 0;
+		friend Dialog;
 	};
 
 	void _runFromOtherThread(LPARAM lp) const;

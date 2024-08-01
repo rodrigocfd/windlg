@@ -12,7 +12,6 @@
 #include "DialogModal.h"
 #include "dpi.h"
 #include "File.h"
-#include "FileMapped.h"
 #include "ImgList.h"
 #include "ini.h"
 #include "ListView.h"

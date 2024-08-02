@@ -183,6 +183,7 @@
     <ClCompile Include="..\windlg\windlg\VersionInfo.cpp" />
     <ClCompile Include="..\windlg\windlg\Window.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\process.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\windlg\windlg\CheckRadio.h" />

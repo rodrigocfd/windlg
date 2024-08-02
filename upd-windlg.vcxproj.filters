@@ -84,6 +84,9 @@
     <ClCompile Include="..\windlg\windlg\Window.cpp">
       <Filter>WinDlg</Filter>
     </ClCompile>
+    <ClCompile Include="src\process.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\windlg\windlg\ini.h">

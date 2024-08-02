@@ -209,9 +209,13 @@
     <ClInclude Include="..\windlg\windlg\vec.h" />
     <ClInclude Include="..\windlg\windlg\VersionInfo.h" />
     <ClInclude Include="..\windlg\windlg\Window.h" />
+    <ClInclude Include="res\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\win10.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\upd-windlg.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

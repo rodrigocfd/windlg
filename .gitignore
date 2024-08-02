@@ -1,0 +1,8 @@
+.vs/
+Win32_Debug/
+Win32_Release/
+x64_Debug/
+x64_Release/
+*.aps
+*.user
+deploy.bat

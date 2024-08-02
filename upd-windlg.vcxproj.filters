@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="WinDlg">
+      <UniqueIdentifier>{6e2dd3ac-c7ab-4448-a4b2-d0451455b9e1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\CheckRadio.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\Com.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\ComboBox.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\CustomControl.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\Dialog.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\DialogMain.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\DialogModal.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\dpi.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\File.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\ImgList.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\ini.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\ListView.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\Menu.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\NativeControl.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\path.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\ProgressBar.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\StatusBar.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\str.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\TimeCount.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\VersionInfo.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windlg\windlg\Window.cpp">
+      <Filter>WinDlg</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\windlg\windlg\ini.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\lib.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\ListView.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\Menu.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\NativeControl.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\path.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\ProgressBar.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\StatusBar.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\str.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\TimeCount.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\vec.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\VersionInfo.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\Window.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\CheckRadio.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\Com.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\ComboBox.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\CustomControl.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\Dialog.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\DialogMain.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\DialogModal.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\dpi.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\File.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\ImgList.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\win10.exe.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
+  </ItemGroup>
+</Project>

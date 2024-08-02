@@ -1,18 +1,20 @@
 #include <conio.h>
 #include <iostream>
 #include <windlg/lib.h>
+using std::vector, std::wstring, std::wstring_view;
 
 static auto dirLibWinDlg = L"D:\\Stuff\\Core\\cpp\\windlg\\windlg";
 static auto baseDirTargets = L"D:\\Stuff\\Core\\cpp";
 static auto targets = {
 	L"flac-lame-frontend",
+	L"id3-fit",
 	L"king",
 	L"upd-windlg",
 	L"vscode-font-patch",
 };
 
-void processSolution(std::wstring_view target, std::wstring_view baseDirTargets, std::wstring_view dirLibWinDlg);
-void processFilter(std::wstring_view target, std::wstring_view baseDirTargets, std::wstring_view dirLibWinDlg);
+void processSolution(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg);
+void processFilter(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg);
 
 int main()
 {

@@ -1,8 +1,9 @@
 #include <stdexcept>
 #include <windlg/lib.h>
+using std::vector, std::wstring, std::wstring_view;
 
-static std::vector<std::wstring> _refillSolution(
-	const std::vector<std::wstring>& lines, std::wstring_view tagSuffix, std::wstring_view ext, std::wstring_view dirLibWinDlg)
+static vector<wstring> _refillSolution(
+	const vector<wstring>& lines, wstring_view tagSuffix, wstring_view ext, wstring_view dirLibWinDlg)
 {
 	size_t idxLine0 = 0, idxLinePast = 0;
 	for (size_t i = 0; i < lines.size(); ++i) {
@@ -22,7 +23,7 @@ static std::vector<std::wstring> _refillSolution(
 	if (!idxLine0 || !idxLinePast)
 		throw std::runtime_error("Solution line not found");
 
-	std::vector<std::wstring> newLines{lines.begin(), lines.begin() + idxLine0};
+	vector<wstring> newLines{lines.begin(), lines.begin() + idxLine0};
 	for (const auto& srcFile : lib::path::dirList( lib::str::fmt(L"%s\\*.%s", dirLibWinDlg, ext) )) {
 		newLines.emplace_back(lib::str::fmt(L"    <Cl%s Include=\"..\\windlg\\windlg\\%s\" />",
 			tagSuffix, lib::path::fileFrom(srcFile)));
@@ -31,7 +32,7 @@ static std::vector<std::wstring> _refillSolution(
 	return newLines;
 }
 
-void processSolution(std::wstring_view target, std::wstring_view baseDirTargets, std::wstring_view dirLibWinDlg)
+void processSolution(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg)
 {
 	auto solutionPath = lib::str::fmt(L"%s\\%s\\%s.vcxproj", baseDirTargets, target, target);
 	auto lines = lib::str::splitLines(lib::FileMapped::ReadAllStr(solutionPath));
@@ -42,8 +43,8 @@ void processSolution(std::wstring_view target, std::wstring_view baseDirTargets,
 }
 
 
-static std::vector<std::wstring> _refillFilter(
-	const std::vector<std::wstring>& lines, std::wstring_view tagSuffix, std::wstring_view ext, std::wstring_view dirLibWinDlg)
+static vector<wstring> _refillFilter(
+	const vector<wstring>& lines, wstring_view tagSuffix, wstring_view ext, wstring_view dirLibWinDlg)
 {
 	size_t idxLine0 = 0, idxLinePast = 0;
 	for (size_t i = 0; i < lines.size(); ++i) {
@@ -64,7 +65,7 @@ static std::vector<std::wstring> _refillFilter(
 	if (!idxLine0 || !idxLinePast)
 		throw std::runtime_error("Filter line not found");
 
-	std::vector<std::wstring> newLines{lines.begin(), lines.begin() + idxLine0};
+	vector<wstring> newLines{lines.begin(), lines.begin() + idxLine0};
 	for (const auto& srcFile : lib::path::dirList( lib::str::fmt(L"%s\\*.%s", dirLibWinDlg, ext) )) {
 		newLines.emplace_back(lib::str::fmt(L"    <Cl%s Include=\"..\\windlg\\windlg\\%s\">",
 			tagSuffix, lib::path::fileFrom(srcFile)));
@@ -75,7 +76,7 @@ static std::vector<std::wstring> _refillFilter(
 	return newLines;
 }
 
-void processFilter(std::wstring_view target, std::wstring_view baseDirTargets, std::wstring_view dirLibWinDlg)
+void processFilter(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg)
 {
 	auto filterPath = lib::str::fmt(L"%s\\%s\\%s.vcxproj.filters", baseDirTargets, target, target);
 	auto lines = lib::str::splitLines(lib::FileMapped::ReadAllStr(filterPath));

@@ -6,6 +6,21 @@
 
 namespace lib::vec {
 
+// Returns true if one of the elements is equal to the given one.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] bool any(R&& v, const std::type_identity_t<T>& elem) {
+	return std::find(v.begin(), v.end(), elem) != v.end();
+}
+// Returns true if the predicate returns true for any of the elements.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] bool anyIf(R&& v, std::predicate<T> auto pred) {
+	return std::find_if(v.begin(), v.end(), pred) != v.end();
+}
+
 // Appends multiple elements to the vector with push_back().
 template<typename T,
 	typename E = std::vector<T>::value_type>

@@ -127,13 +127,17 @@ template<std::ranges::contiguous_range R,
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
-[[nodiscard]] std::vector<std::span<T>> split(R&& v, const std::type_identity_t<T>& delimiter) {
+[[nodiscard]] std::vector<std::span<T>> split(
+		R&& v, const std::type_identity_t<T>& delimiter, std::optional<UINT> maxParts = std::nullopt) {
 	if (v.empty()) return {};
 
 	std::span<T> src{v};
 	std::vector<std::span<T>> ret;
 	size_t head = 0;
 	for (;;) {
+		if (maxParts.has_value() && maxParts.value() && ret.size() >= maxParts.value() - 1)
+			break;
+
 		std::optional<size_t> maybeHead = position(src, delimiter);
 		if (!maybeHead.has_value()) {
 			break;

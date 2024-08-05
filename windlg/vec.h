@@ -6,6 +6,29 @@
 
 namespace lib::vec {
 
+// Returns true if all elements are equal to the given one.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] bool all(R&& v, const std::type_identity_t<T>& elem) {
+	for (auto it = v.begin(); it != v.end(); ++it) {
+		if (*it != elem) return false;
+	}
+	return true;
+}
+// Returns true if the predicate returns true for all of the elements.
+// Example:
+// allIf(entries, [](const Entry&) -> bool { return true; });
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] bool allIf(R&& v, std::predicate<T> auto pred) {
+	for (auto it = v.begin(); it != v.end(); ++it) {
+		if (!pred(*it)) return false;
+	}
+	return true;
+}
+
 // Returns true if one of the elements is equal to the given one.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
@@ -14,6 +37,8 @@ template<std::ranges::contiguous_range R,
 	return std::find(v.begin(), v.end(), elem) != v.end();
 }
 // Returns true if the predicate returns true for any of the elements.
+// Example:
+// anyIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
@@ -79,7 +104,7 @@ template<std::ranges::contiguous_range R,
 }
 // Returns the index according to the predicate.
 // Example:
-// position_if(entries, [](const Entry&) -> bool { return true; });
+// positionIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
@@ -89,7 +114,7 @@ template<std::ranges::contiguous_range R,
 }
 // Returns the last index according to the predicate.
 // Example:
-// position_if(entries, [](const Entry&) -> bool { return true; });
+// positionRefIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>

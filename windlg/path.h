@@ -11,6 +11,7 @@ namespace lib::path {
 [[nodiscard]] std::wstring exeDir();
 [[nodiscard]] bool exists(std::wstring_view p);
 [[nodiscard]] std::wstring fileFrom(std::wstring_view p);
+[[nodiscard]] bool hasExtension(std::wstring_view p, std::wstring_view ext);
 [[nodiscard]] bool hasExtension(std::wstring_view p, std::initializer_list<std::wstring_view> exts);
 [[nodiscard]] bool isDir(std::wstring_view p);
 [[nodiscard]] bool isHidden(std::wstring_view p);

@@ -106,10 +106,15 @@ std::wstring lib::path::fileFrom(std::wstring_view p)
 	return ret;
 }
 
+bool lib::path::hasExtension(std::wstring_view p, std::wstring_view ext)
+{
+	return str::endsWithI(p, ext);
+}
+
 bool lib::path::hasExtension(std::wstring_view p, std::initializer_list<std::wstring_view> exts)
 {
 	for (auto&& ext : exts) {
-		if (str::endsWithI(p, ext))
+		if (hasExtension(p, ext))
 			return true;
 	}
 	return false;

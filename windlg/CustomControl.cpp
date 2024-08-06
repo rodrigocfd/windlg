@@ -5,7 +5,7 @@
 #pragma comment(lib, "UxTheme.lib")
 using namespace lib;
 
-void CustomControl::create(Dialog* parent, CreateOpts createOpts) const
+void CustomControl::create(const Dialog* parent, CreateOpts createOpts) const
 {
 	if (hWnd()) [[unlikely]] {
 		throw std::logic_error("Cannot create CustomControl twice");

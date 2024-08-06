@@ -24,7 +24,7 @@ public:
 	CustomControl& operator=(CustomControl&&) = delete;
 
 	// Creates the custom child control and returns immediately.
-	void create(Dialog* parent, CreateOpts createOpts) const;
+	void create(const Dialog* parent, CreateOpts createOpts) const;
 
 protected:
 	virtual LRESULT wndProc(UINT uMsg, WPARAM wp, LPARAM lp) = 0; // to be overriden in user class

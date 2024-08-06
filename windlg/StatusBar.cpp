@@ -82,7 +82,7 @@ void StatusBar::PartCollection::_resizeToParent(UINT cxParent)
 }
 
 
-const StatusBar& StatusBar::create(Dialog* parent, WORD ctrlId)
+const StatusBar& StatusBar::create(const Dialog* parent, WORD ctrlId)
 {
 	HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(parent->hWnd(), GWLP_HINSTANCE));
 

@@ -152,7 +152,7 @@ public:
 
 	constexpr explicit ListView(HWND hList) : NativeControl{hList} { }
 	ListView(HWND hParent, WORD listId) : NativeControl{hParent, listId} { }
-	ListView(Window* parent, WORD listId) : NativeControl{parent, listId} { }
+	ListView(const Window* parent, WORD listId) : NativeControl{parent, listId} { }
 
 	// Sets LVS_EX_FULLROWSELECT extended style.
 	const ListView& setFullRowSelect(bool doSet = true) const;

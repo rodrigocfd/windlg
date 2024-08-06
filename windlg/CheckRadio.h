@@ -16,7 +16,7 @@ public:
 
 	constexpr explicit CheckRadio(HWND hCtrl) : NativeControl{hCtrl} { }
 	CheckRadio(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }
-	CheckRadio(Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
+	CheckRadio(const Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
 
 	const CheckRadio& check(bool checked = true) const;
 	const CheckRadio& checkAndTrigger(bool checked = true) const;

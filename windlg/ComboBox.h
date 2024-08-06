@@ -18,7 +18,7 @@ public:
 
 	constexpr explicit ComboBox(HWND hCtrl) : NativeControl{hCtrl} { }
 	ComboBox(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }
-	ComboBox(Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
+	ComboBox(const Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
 
 	const ComboBox& add(std::initializer_list<std::wstring_view> items) const;
 	const ComboBox& clear() const;

@@ -2,7 +2,7 @@
 #include "DialogModal.h"
 using namespace lib;
 
-INT_PTR DialogModal::showModal(Dialog* parent, WORD dlgId) const
+INT_PTR DialogModal::showModal(const Dialog* parent, WORD dlgId) const
 {
 	if (!parent) [[unlikely]] {
 		throw std::invalid_argument("Modal parent is null");

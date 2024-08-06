@@ -18,7 +18,7 @@ public:
 
 	constexpr explicit ProgressBar(HWND hCtrl) : NativeControl{hCtrl} { }
 	ProgressBar(HWND hParent, WORD ctrlId) : NativeControl{hParent, ctrlId} { }
-	ProgressBar(Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
+	ProgressBar(const Window* parent, WORD ctrlId) : NativeControl{parent, ctrlId} { }
 
 	[[nodiscard]] UINT pos() const;
 	[[nodiscard]] PBRANGE range() const;

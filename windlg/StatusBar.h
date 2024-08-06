@@ -75,7 +75,7 @@ public:
 	StatusBar& operator=(StatusBar&&) = delete;
 
 	// Creates a new StatusBar by calling CreateWindowEx().
-	const StatusBar& create(Dialog* parent, WORD ctrlId = 0);
+	const StatusBar& create(const Dialog* parent, WORD ctrlId = 0);
 
 	// To be called during parent's WM_SIZE processing.
 	const StatusBar& resizeToParent(UINT cxParent);

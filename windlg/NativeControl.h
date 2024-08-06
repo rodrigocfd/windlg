@@ -16,7 +16,7 @@ public:
 
 	constexpr explicit NativeControl(HWND hCtrl) : Window{hCtrl} { }
 	NativeControl(HWND hParent, WORD ctrlId);
-	NativeControl(Window* parent, WORD ctrlId) : NativeControl{parent->hWnd(), ctrlId} { }
+	NativeControl(const Window* parent, WORD ctrlId) : NativeControl{parent->hWnd(), ctrlId} { }
 
 	// Sends WM_NEXTDLGCTL.
 	void focus() const;

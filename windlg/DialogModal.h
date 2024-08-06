@@ -15,7 +15,7 @@ public:
 	DialogModal& operator=(DialogModal&&) = delete;
 
 	// Displays the modal dialog, and returns only after the dialog is closed.
-	INT_PTR showModal(Dialog* parent, WORD dlgId) const;
+	INT_PTR showModal(const Dialog* parent, WORD dlgId) const;
 
 private:
 	Dialog::_DlgProc;

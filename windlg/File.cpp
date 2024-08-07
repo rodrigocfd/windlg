@@ -172,7 +172,7 @@ void FileMapped::close() noexcept
 FileMapped& FileMapped::open(std::wstring_view path, Access access)
 {
 	close();
-	File::Access facc = (access == Access::ExistingReadOnly) ? File::Access::ExistingRW : File::Access::ExistingRW;
+	File::Access facc = (access == Access::ExistingReadOnly) ? File::Access::ExistingReadOnly : File::Access::ExistingRW;
 	DWORD page = (access == Access::ExistingReadOnly) ? PAGE_READONLY : PAGE_READWRITE;
 
 	_file.open(path, facc);

@@ -9,6 +9,8 @@ namespace lib::str {
 
 constexpr size_t SSO_LEN = std::string{}.capacity();
 
+[[nodiscard]] int cmp(std::wstring_view a, std::wstring_view b);
+[[nodiscard]] int cmpI(std::wstring_view a, std::wstring_view b);
 [[nodiscard]] bool contains(std::wstring_view s, std::wstring_view what, size_t off = 0);
 [[nodiscard]] bool endsWith(std::wstring_view s, std::wstring_view theEnd);
 [[nodiscard]] bool endsWithI(std::wstring_view s, std::wstring_view theEnd);

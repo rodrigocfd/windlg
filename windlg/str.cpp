@@ -4,6 +4,16 @@
 #include <Windows.h>
 #include "str.h"
 
+int lib::str::cmp(std::wstring_view a, std::wstring_view b)
+{
+	return lstrcmpW(a.data(), b.data());
+}
+
+int lib::str::cmpI(std::wstring_view a, std::wstring_view b)
+{
+	return lstrcmpiW(a.data(), b.data());
+}
+
 bool lib::str::contains(std::wstring_view s, std::wstring_view what, size_t off)
 {
 	return s.find(what, off) != std::wstring::npos;

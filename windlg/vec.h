@@ -47,16 +47,13 @@ template<std::ranges::contiguous_range R,
 }
 
 // Appends multiple elements to the vector with push_back().
-template<typename T,
-	typename E = std::vector<T>::value_type>
-void append(std::vector<T>& dest, const E& elem) {
+template<typename T>
+void append(std::vector<T>& dest, const std::type_identity_t<T>& elem) {
 	dest.push_back(elem);
 }
 // Appends multiple elements to the vector with push_back().
-template<typename T,
-	typename E = std::vector<T>::value_type,
-	typename... U>
-void append(std::vector<T>& dest, const E& elem, U... rest) {
+template<typename T, typename... U>
+void append(std::vector<T>& dest, const std::type_identity_t<T>& elem, U... rest) {
 	append(dest, elem);
 	append(dest, rest...);
 }

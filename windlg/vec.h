@@ -151,6 +151,8 @@ template<std::ranges::contiguous_range R,
 }
 
 // Returns a new vector by applying the callback to each element.
+// Example:
+// vector<int> v = transform(entries, [](const Entry&) -> int { return 9; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>,
 	typename F = std::is_invocable<const std::type_identity_t<T>&>,

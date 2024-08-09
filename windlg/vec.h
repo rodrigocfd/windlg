@@ -150,4 +150,18 @@ template<std::ranges::contiguous_range R,
 	return ret;
 }
 
+// Returns a new vector by applying the callback to each element.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>,
+	typename F = std::is_invocable<const std::type_identity_t<T>&>,
+	typename U = std::invoke_result_t<F, const std::type_identity_t<T>&> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::vector<U> transform(R&& v, F callback) {
+	std::vector<U> ret;
+	ret.reserve(v.size());
+	for (auto&& elem : v)
+		ret.emplace_back(callback(elem));
+	return ret;
+}
+
 }

@@ -37,8 +37,8 @@ public:
 
 
 // Templated COM smart pointer.
-template<typename T,
-	typename = std::enable_if_t<std::is_base_of_v<IUnknown, T>>>
+template<typename T>
+	requires std::is_base_of_v<IUnknown, T>
 class ComPtr final {
 public:
 	~ComPtr() { release(); }
@@ -76,8 +76,8 @@ public:
 	}
 
 	// Creates the COM pointer with QueryInterface().
-	template<typename Q,
-		typename = std::enable_if_t<std::is_base_of_v<IUnknown, Q>>>
+	template<typename Q>
+		requires std::is_base_of_v<IUnknown, Q>
 	[[nodiscard]] ComPtr<Q> queryInterface() const {
 		Q* pQueried = nullptr;
 		checkHr(_p->QueryInterface(IID_PPV_ARGS(&pQueried)), "QueryInterface");

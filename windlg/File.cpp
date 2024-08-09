@@ -78,7 +78,7 @@ const File& File::readBuffer(std::vector<BYTE>& buffer) const
 const File& File::setPointerOffset(size_t offset) const
 {
 	LARGE_INTEGER off = {.QuadPart = static_cast<LONGLONG>(offset)};
-	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_CURRENT)) [[unlikely]] {
+	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
 	}
 	return *this;

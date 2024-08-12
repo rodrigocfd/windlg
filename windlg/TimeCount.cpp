@@ -5,7 +5,14 @@ using namespace lib;
 
 LONGLONG TimeCount::_Freq = 0;
 
-void TimeCount::start()
+TimeCount TimeCount::Immediately()
+{
+	TimeCount t;
+	t.restart();
+	return t;
+}
+
+void TimeCount::restart()
 {
 	LARGE_INTEGER freq{}, t0{};
 	if (!_Freq) {

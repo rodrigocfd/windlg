@@ -14,16 +14,20 @@ public:
 		WORD hr = 0;
 	};
 
-	constexpr TimeCount() = default;
 	constexpr TimeCount(const TimeCount&) = default;
 	constexpr TimeCount(TimeCount&&) = default;
 	constexpr TimeCount& operator=(const TimeCount&) = default;
 	constexpr TimeCount& operator=(TimeCount&&) = default;
 
-	void start();
+	[[nodiscard]] constexpr static TimeCount Delayed() { return {}; }
+	[[nodiscard]] static TimeCount Immediately();
+
+	void restart();
 	[[nodiscard]] Duration now() const;
 
 private:
+	constexpr TimeCount() = default;
+
 	static LONGLONG _Freq;
 	LONGLONG _t0 = 0;
 };

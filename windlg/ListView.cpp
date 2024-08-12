@@ -367,6 +367,12 @@ const ListView& ListView::setFullRowSelect(bool doSet) const
 	return *this;
 }
 
+const ListView& ListView::setGridLines(bool doSet) const
+{
+	ListView_SetExtendedListViewStyleEx(hWnd(), LVS_EX_GRIDLINES, doSet ? LVS_EX_GRIDLINES : 0);
+	return *this;
+}
+
 const ListView& ListView::setImageList(const ImgList& imgList) const
 {
 	SIZE res = imgList.resolution();

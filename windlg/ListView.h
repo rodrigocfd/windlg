@@ -157,6 +157,9 @@ public:
 	// Sets LVS_EX_FULLROWSELECT extended style.
 	const ListView& setFullRowSelect(bool doSet = true) const;
 
+	// Sets LVS_EX_GRIDLINES extended style.
+	const ListView& setGridLines(bool doSet = true) const;
+
 	const ListView& setImageList(const ImgList& imgList) const;
 
 	// Call at the beginning of DLGPROC.

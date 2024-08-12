@@ -120,6 +120,16 @@ template<std::ranges::contiguous_range R,
 	return (foundIt == v.rend()) ? std::nullopt : std::optional{std::distance(foundIt, std::prev(v.rend()))};
 }
 
+// Removes the elements to which the callback returns true.
+// Example:
+// removeIf(entries, [](const Entry&) -> bool { return true; });
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+void removeIf(R&& v, std::predicate<T> auto pred) {
+	v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
+}
+
 // Returns spans over the source vector, splitted by the delimiter, including empty spans.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >

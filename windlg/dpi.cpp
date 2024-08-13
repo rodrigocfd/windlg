@@ -12,6 +12,18 @@ static void _cacheDpi()
 	}
 }
 
+UINT lib::dpi::cx(UINT cx)
+{
+	_cacheDpi();
+	return MulDiv(cx, _dpiX, 96);
+}
+
+UINT lib::dpi::cy(UINT cy)
+{
+	_cacheDpi();
+	return MulDiv(cy, _dpiY, 96);
+}
+
 POINT lib::dpi::pt(POINT p)
 {
 	_cacheDpi();

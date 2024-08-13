@@ -392,6 +392,12 @@ void ListView::ProcessMessages(Dialog *parent, WORD idList, UINT uMsg, WPARAM wp
 {
 	if (uMsg == WM_INITDIALOG) {
 		if (ListView lv{parent, idList}; lv.hWnd()) [[likely]] {
+#ifdef _DEBUG
+			DWORD exStyle = static_cast<DWORD>(GetWindowLongPtrW(lv.hWnd(), GWL_STYLE));
+			if ( !(exStyle & LVS_SHAREIMAGELISTS) )
+				throw std::runtime_error(lib::str::toAnsi(lib::str::fmt(L"ListView %d doesn't have LVS_SHAREIMAGELISTS.", idList)));
+#endif
+
 			static UINT idSubclass = 1;
 			if (!SetWindowSubclass(lv.hWnd(), _SubclassProc, idSubclass++, 0)) [[unlikely]] {
 				throw std::system_error(GetLastError(), std::system_category(), "SetWindowSubclass failed");

@@ -19,10 +19,16 @@ public:
 	constexpr TimeCount& operator=(const TimeCount&) = default;
 	constexpr TimeCount& operator=(TimeCount&&) = default;
 
+	// Returns a new uninitialized TimeCount, you must call restart() to start counting.
 	[[nodiscard]] constexpr static TimeCount Delayed() { return {}; }
+
+	// Returns a new TimeCount which will start counting immediately.
 	[[nodiscard]] static TimeCount Immediately();
 
+	// Resets the counter.
 	void restart();
+
+	// Returns the duration since the timer was started.
 	[[nodiscard]] Duration now() const;
 
 private:

@@ -15,6 +15,7 @@ Add all library files under your compilation tree and include the single header 
 Real-world examples:
 
 * [flac-lame-frontend](https://github.com/rodrigocfd/flac-lame-frontend/tree/cpp-v3)
+* [id3-fit](https://github.com/rodrigocfd/id3-padding-remover/tree/cpp-v4)
 * [vscode-font-patch](https://github.com/rodrigocfd/vscode-font-patch/tree/cpp-v3.x)
 
 ## License

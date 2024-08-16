@@ -90,6 +90,7 @@ public:
 		template<typename T> [[nodiscard]] T data() const { if constexpr (std::is_pointer_v<T>) return reinterpret_cast<T>(_data()); else return static_cast<T>(_data()); }
 		const Item& focus() const;
 		[[nodiscard]] constexpr int index() const { return _index; }
+		[[nodiscard]] bool isSelected() const;
 		[[nodiscard]] bool isVisible() const;
 		void remove() const;
 		const Item& select(bool doSelect = true) const;

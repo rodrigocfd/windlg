@@ -181,6 +181,11 @@ const ListView::Item& ListView::Item::select(bool doSelect) const
 	return *this;
 }
 
+bool ListView::Item::isSelected() const
+{
+	return ListView_GetItemState(_hList, _index, LVIS_SELECTED) & LVIS_SELECTED;
+}
+
 bool ListView::Item::isVisible() const
 {
 	return ListView_IsItemVisible(_hList, _index);

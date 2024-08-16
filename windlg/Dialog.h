@@ -12,8 +12,8 @@ namespace lib {
 // Base to all dialog windows.
 class Dialog : public Window {
 public:
-	// Child control horizontal and vertical behavior.
-	enum class Act { None, Repos, Resize };
+	enum class Horz { None, Repos, Resize }; // Horizontal layout behavior for child controls.
+	enum class Vert { None, Repos, Resize }; // Vertical layout behavior for child controls.
 
 private:
 	class Facilities final {
@@ -31,7 +31,7 @@ private:
 		void enable(std::initializer_list<WORD> ctrlIds, bool doEnable = true) const;
 
 		// Adds one or more controls to the automatic layout resizing and repositioning.
-		const Facilities& layout(Act horz, Act vert, std::initializer_list<WORD> ctrlIds) const;
+		const Facilities& layout(Horz horz, Vert vert, std::initializer_list<WORD> ctrlIds) const;
 
 		// Calls RegisterDragDrop() to enable onDropTarget() callback. Don't forget to instantiate lib::ComOle.
 		const Facilities& registerDragDrop() const;
@@ -91,14 +91,14 @@ private:
 		Layout& operator=(const Layout&) = delete;
 		Layout& operator=(Layout&&) = delete;
 
-		void add(Act horz, Act vert, std::initializer_list<WORD> ctrlIds);
+		void add(Horz horz, Vert vert, std::initializer_list<WORD> ctrlIds);
 		void processMsgs(UINT uMsg, WPARAM wp, LPARAM lp) const;
 
 	private:
 		struct ChildInfo final {
 			HWND hCtrl = nullptr;
-			Act horz = Act::None;
-			Act vert = Act::None;
+			Horz horz = Horz::None;
+			Vert vert = Vert::None;
 			RECT rcOrig{};
 		};
 

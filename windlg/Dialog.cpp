@@ -22,7 +22,7 @@ void Dialog::Facilities::enable(std::initializer_list<WORD> ctrlIds, bool doEnab
 		EnableWindow(GetDlgItem(_pDlg->hWnd(), ctrlId), doEnable);
 }
 
-const Dialog::Facilities& Dialog::Facilities::layout(Act horz, Act vert, std::initializer_list<WORD> ctrlIds) const
+const Dialog::Facilities& Dialog::Facilities::layout(Horz horz, Vert vert, std::initializer_list<WORD> ctrlIds) const
 {
 	_pDlg->_layout.add(horz, vert, ctrlIds);
 	return *this;
@@ -166,9 +166,9 @@ int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstri
 }
 
 
-void Dialog::Layout::add(Act horz, Act vert, std::initializer_list<WORD> ctrlIds)
+void Dialog::Layout::add(Horz horz, Vert vert, std::initializer_list<WORD> ctrlIds)
 {
-	if (horz == Act::None && vert == Act::None) [[unlikely]] { // if nothing to do, don't even bother adding it
+	if (horz == Horz::None && vert == Vert::None) [[unlikely]] { // if nothing to do, don't even bother adding it
 		return;
 	}
 
@@ -198,20 +198,20 @@ void Dialog::Layout::processMsgs(UINT uMsg, WPARAM wp, LPARAM lp) const
 	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
 	for (auto& ctrl : _ctrls) {
 		UINT swp = SWP_NOZORDER;
-		if (ctrl.horz == Act::Repos && ctrl.vert == Act::Repos) { // reposition both horz & vert
+		if (ctrl.horz == Horz::Repos && ctrl.vert == Vert::Repos) { // reposition both horz & vert
 			swp |= SWP_NOSIZE;
-		} else if (ctrl.horz == Act::Resize && ctrl.vert == Act::Resize) { // resize both horz & vert
+		} else if (ctrl.horz == Horz::Resize && ctrl.vert == Vert::Resize) { // resize both horz & vert
 			swp |= SWP_NOMOVE;
 		}
 
 		DeferWindowPos(hdwp, ctrl.hCtrl, nullptr,
-			ctrl.horz == Act::Repos ? cxParent - _szParentOrig.cx + ctrl.rcOrig.left
+			ctrl.horz == Horz::Repos ? cxParent - _szParentOrig.cx + ctrl.rcOrig.left
 				: ctrl.rcOrig.left,
-			ctrl.vert == Act::Repos ? cyParent - _szParentOrig.cy + ctrl.rcOrig.top
+			ctrl.vert == Vert::Repos ? cyParent - _szParentOrig.cy + ctrl.rcOrig.top
 				: ctrl.rcOrig.top,
-			ctrl.horz == Act::Resize ? cxParent - _szParentOrig.cx + ctrl.rcOrig.right - ctrl.rcOrig.left
+			ctrl.horz == Horz::Resize ? cxParent - _szParentOrig.cx + ctrl.rcOrig.right - ctrl.rcOrig.left
 				: ctrl.rcOrig.right - ctrl.rcOrig.left,
-			ctrl.vert == Act::Resize ? cyParent - _szParentOrig.cy + ctrl.rcOrig.bottom - ctrl.rcOrig.top
+			ctrl.vert == Vert::Resize ? cyParent - _szParentOrig.cy + ctrl.rcOrig.bottom - ctrl.rcOrig.top
 				: ctrl.rcOrig.bottom - ctrl.rcOrig.top,
 			swp);
 	}

@@ -24,6 +24,74 @@ UINT lib::dpi::cy(UINT cy)
 	return MulDiv(cy, _dpiY, 96);
 }
 
+int lib::dpi::himetricToPixelX(int x, std::optional<HDC> hdc, std::optional<HWND> hWnd)
+{
+	if (hdc.has_value()) {
+		return MulDiv(x, GetDeviceCaps(hdc.value(), LOGPIXELSX), 2540);
+	} else if (hWnd.has_value()) {
+		HDC hdc = GetDC(hWnd.value());
+		int pxX =  MulDiv(x, GetDeviceCaps(hdc, LOGPIXELSX), 2540);
+		ReleaseDC(hWnd.value(), hdc);
+		return pxX;
+	} else {
+		HDC hdc = GetDC(nullptr); // entire screen
+		int pxX =  MulDiv(x, GetDeviceCaps(hdc, LOGPIXELSX), 2540);
+		ReleaseDC(nullptr, hdc);
+		return pxX;
+	}
+}
+
+int lib::dpi::himetricToPixelY(int y, std::optional<HDC> hdc, std::optional<HWND> hWnd)
+{
+	if (hdc.has_value()) {
+		return MulDiv(y, GetDeviceCaps(hdc.value(), LOGPIXELSY), 2540);
+	} else if (hWnd.has_value()) {
+		HDC hdc = GetDC(hWnd.value());
+		int pxY =  MulDiv(y, GetDeviceCaps(hdc, LOGPIXELSY), 2540);
+		ReleaseDC(hWnd.value(), hdc);
+		return pxY;
+	} else {
+		HDC hdc = GetDC(nullptr); // entire screen
+		int pxY =  MulDiv(y, GetDeviceCaps(hdc, LOGPIXELSY), 2540);
+		ReleaseDC(nullptr, hdc);
+		return pxY;
+	}
+}
+
+int lib::dpi::pixelToHimetricX(int x, std::optional<HDC> hdc, std::optional<HWND> hWnd)
+{
+	if (hdc.has_value()) {
+		return MulDiv(x, 2540, GetDeviceCaps(hdc.value(), LOGPIXELSX));
+	} else if (hWnd.has_value()) {
+		HDC hdc = GetDC(hWnd.value());
+		int pxX =  MulDiv(x, 2540, GetDeviceCaps(hdc, LOGPIXELSX));
+		ReleaseDC(hWnd.value(), hdc);
+		return pxX;
+	} else {
+		HDC hdc = GetDC(nullptr); // entire screen
+		int pxX =  MulDiv(x, 2540, GetDeviceCaps(hdc, LOGPIXELSX));
+		ReleaseDC(nullptr, hdc);
+		return pxX;
+	}
+}
+
+int lib::dpi::pixelToHimetricY(int y, std::optional<HDC> hdc, std::optional<HWND> hWnd)
+{
+	if (hdc.has_value()) {
+		return MulDiv(y, 2540, GetDeviceCaps(hdc.value(), LOGPIXELSY));
+	} else if (hWnd.has_value()) {
+		HDC hdc = GetDC(hWnd.value());
+		int pxY =  MulDiv(y, 2540, GetDeviceCaps(hdc, LOGPIXELSY));
+		ReleaseDC(hWnd.value(), hdc);
+		return pxY;
+	} else {
+		HDC hdc = GetDC(nullptr); // entire screen
+		int pxY =  MulDiv(y, 2540, GetDeviceCaps(hdc, LOGPIXELSY));
+		ReleaseDC(nullptr, hdc);
+		return pxY;
+	}
+}
+
 POINT lib::dpi::pt(POINT p)
 {
 	_cacheDpi();

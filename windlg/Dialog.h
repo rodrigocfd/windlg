@@ -33,6 +33,10 @@ private:
 		// Adds one or more controls to the automatic layout resizing and repositioning.
 		const Facilities& layout(Horz horz, Vert vert, std::initializer_list<WORD> ctrlIds) const;
 
+		// Calls TaskDialogIndirect(); returns IDOK, IDCANCEL, etc.
+		int msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
+			std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const;
+
 		// Calls RegisterDragDrop() to enable onDropTarget() callback. Don't forget to instantiate lib::ComOle.
 		const Facilities& registerDragDrop() const;
 
@@ -46,10 +50,6 @@ private:
 		[[nodiscard]] std::optional<std::vector<std::wstring>> showOpenFiles(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
 		[[nodiscard]] std::optional<std::wstring> showSaveFile(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const { return _showOpenSave(false, false, namesExts); }
 		[[nodiscard]] std::optional<std::wstring> showOpenFolder() const { return _showOpenSave(true, true, {}); }
-		
-		// Calls TaskDialogIndirect(); returns IDOK, IDCANCEL, etc.
-		int msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
-			std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const;
 
 	private:
 		[[nodiscard]] std::optional<std::wstring> _showOpenSave(bool isOpen, bool isFolder,

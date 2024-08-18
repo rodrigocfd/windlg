@@ -28,6 +28,27 @@ const Dialog::Facilities& Dialog::Facilities::layout(Horz horz, Vert vert, std::
 	return *this;
 }
 
+int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
+	std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const
+{
+	TASKDIALOGCONFIG tdc = {
+		.cbSize = sizeof(TASKDIALOGCONFIG),
+		.hwndParent = _pDlg->hWnd(),
+		.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW,
+		.dwCommonButtons = tdcbfButtons,
+		.pszWindowTitle = title.data(),
+		.pszMainIcon = tdIcon,
+		.pszMainInstruction = mainInstruction.has_value() ? mainInstruction.value().data() : nullptr,
+		.pszContent = body.data(),
+	};
+
+	int pnButton = 0;
+	if (HRESULT hr = TaskDialogIndirect(&tdc, &pnButton, nullptr, nullptr); FAILED(hr)) [[unlikely]] {
+		throw std::system_error(hr, std::system_category(), "TaskDialogIndirect failed");
+	}
+	return pnButton;
+}
+
 const Dialog::Facilities& Dialog::Facilities::registerDragDrop() const
 {
 	if (_pDlg->_usingDropTarget) [[unlikely]] {
@@ -142,27 +163,6 @@ std::optional<std::wstring> Dialog::Facilities::_showOpenSave(bool isOpen, bool 
 	} else [[unlikely]] {
 		throw std::system_error(hr, std::system_category(), "IModalWindow::Show failed");
 	}
-}
-
-int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstring_view> mainInstruction,
-	std::wstring_view body, int tdcbfButtons, LPWSTR tdIcon) const
-{
-	TASKDIALOGCONFIG tdc = {
-		.cbSize = sizeof(TASKDIALOGCONFIG),
-		.hwndParent = _pDlg->hWnd(),
-		.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW,
-		.dwCommonButtons = tdcbfButtons,
-		.pszWindowTitle = title.data(),
-		.pszMainIcon = tdIcon,
-		.pszMainInstruction = mainInstruction.has_value() ? mainInstruction.value().data() : nullptr,
-		.pszContent = body.data(),
-	};
-
-	int pnButton = 0;
-	if (HRESULT hr = TaskDialogIndirect(&tdc, &pnButton, nullptr, nullptr); FAILED(hr)) [[unlikely]] {
-		throw std::system_error(hr, std::system_category(), "TaskDialogIndirect failed");
-	}
-	return pnButton;
 }
 
 

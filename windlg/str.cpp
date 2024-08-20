@@ -92,6 +92,13 @@ std::wstring lib::str::newReserved(size_t numReserve)
 	return s;
 }
 
+std::wstring lib::str::newResized(size_t numResize, WCHAR ch)
+{
+	std::wstring s;
+	s.resize(numResize, ch);
+	return s;
+}
+
 std::optional<size_t> lib::str::position(std::wstring_view s, std::wstring_view what, size_t off)
 {
 	size_t pos = s.find(what, off);

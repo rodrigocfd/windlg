@@ -20,6 +20,7 @@ constexpr size_t SSO_LEN = std::string{}.capacity();
 [[nodiscard]] LPCWSTR guessLineBreak(std::wstring_view s);
 [[nodiscard]] std::wstring join(std::span<std::wstring> all, std::wstring_view separator = L"");
 [[nodiscard]] std::wstring newReserved(size_t numReserve);
+[[nodiscard]] std::wstring newResized(size_t numResize, WCHAR ch = L'\0');
 [[nodiscard]] std::wstring parse(std::span<BYTE> src);
 [[nodiscard]] std::optional<size_t> position(std::wstring_view s, std::wstring_view what, size_t off = 0);
 [[nodiscard]] std::optional<size_t> positionRev(std::wstring_view s, std::wstring_view what, size_t off = 0);

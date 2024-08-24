@@ -75,6 +75,43 @@ void append(std::vector<T>& dest, R&& other, U... rest) {
 	append(dest, rest...);
 }
 
+// Returns a pointer to the first found element.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::optional<T*> find(R&& v, const std::type_identity_t<T>& elem) {
+	auto foundIt = std::find(v.begin(), v.end(), elem);
+	return (foundIt == v.end()) ? std::nullopt : std::optional{&(*foundIt)};
+}
+// Returns a pointer to the first element according to the predicate.
+// Example:
+// findIf(entries, [](const Entry&) -> bool { return true; });
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::optional<T*> findIf(R&& v, std::predicate<T> auto pred) {
+	auto foundIt = std::find_if(v.begin(), v.end(), pred);
+	return (foundIt == v.end()) ? std::nullopt : std::optional{&(*foundIt)};
+}
+// Returns a pointer to the last found element.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::optional<T*> findRev(R&& v, const std::type_identity_t<T>& elem) {
+	auto foundIt = std::find(v.rbegin(), v.rend(), elem);
+	return (foundIt == v.rend()) ? std::nullopt : std::optional{&(*foundIt)};
+}
+// Returns a pointer to the last element according to the predicate.
+// Example:
+// findRefIf(entries, [](const Entry&) -> bool { return true; });
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::optional<T*> findRevIf(R&& v, std::predicate<T> auto pred) {
+	auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
+	return (foundIt == v.rend()) ? std::nullopt : std::optional{&(*foundIt)};
+}
+
 // Creates a vector and calls reserve().
 template<typename T>
 [[nodiscard]] std::vector<T> newReserved(size_t numReserve) {
@@ -83,7 +120,7 @@ template<typename T>
 	return v;
 }
 
-// Returns the index of the first element.
+// Returns the index of the first found element.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
@@ -91,7 +128,7 @@ template<std::ranges::contiguous_range R,
 	auto foundIt = std::find(v.begin(), v.end(), elem);
 	return (foundIt == v.end()) ? std::nullopt : std::optional{std::distance(v.begin(), foundIt)};
 }
-// Returns the index of the last element.
+// Returns the index of the last found element.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
@@ -99,7 +136,7 @@ template<std::ranges::contiguous_range R,
 	auto foundIt = std::find(v.rbegin(), v.rend(), elem);
 	return (foundIt == v.rend()) ? std::nullopt : std::optional{std::distance(foundIt, std::prev(v.rend()))};
 }
-// Returns the index according to the predicate.
+// Returns the first index according to the predicate.
 // Example:
 // positionIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
@@ -120,6 +157,11 @@ template<std::ranges::contiguous_range R,
 	return (foundIt == v.rend()) ? std::nullopt : std::optional{std::distance(foundIt, std::prev(v.rend()))};
 }
 
+// Removes the element at the given index.
+template<typename T>
+void remove(std::vector<T>& v, size_t index) {
+	v.erase(v.begin() + index);
+}
 // Removes the elements to which the callback returns true.
 // Example:
 // removeIf(entries, [](const Entry&) -> bool { return true; });

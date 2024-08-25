@@ -75,41 +75,41 @@ void append(std::vector<T>& dest, R&& other, U... rest) {
 	append(dest, rest...);
 }
 
-// Returns a pointer to the first found element.
+// Returns a pointer to the first found element, or nullptr.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
-[[nodiscard]] std::optional<T*> find(R&& v, const std::type_identity_t<T>& elem) {
+[[nodiscard]] T* find(R&& v, const std::type_identity_t<T>& elem) {
 	auto foundIt = std::find(v.begin(), v.end(), elem);
-	return (foundIt == v.end()) ? std::nullopt : std::optional{&(*foundIt)};
+	return (foundIt == v.end()) ? nullptr : &(*foundIt);
 }
-// Returns a pointer to the first element according to the predicate.
+// Returns a pointer to the first element according to the predicate, or nullptr.
 // Example:
 // findIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
-[[nodiscard]] std::optional<T*> findIf(R&& v, std::predicate<T> auto pred) {
+[[nodiscard]] T* findIf(R&& v, std::predicate<T> auto pred) {
 	auto foundIt = std::find_if(v.begin(), v.end(), pred);
-	return (foundIt == v.end()) ? std::nullopt : std::optional{&(*foundIt)};
+	return (foundIt == v.end()) ? nullptr : &(*foundIt);
 }
-// Returns a pointer to the last found element.
+// Returns a pointer to the last found element, or nullptr.
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
-[[nodiscard]] std::optional<T*> findRev(R&& v, const std::type_identity_t<T>& elem) {
+[[nodiscard]] T* findRev(R&& v, const std::type_identity_t<T>& elem) {
 	auto foundIt = std::find(v.rbegin(), v.rend(), elem);
-	return (foundIt == v.rend()) ? std::nullopt : std::optional{&(*foundIt)};
+	return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 }
-// Returns a pointer to the last element according to the predicate.
+// Returns a pointer to the last element according to the predicate, or nullptr.
 // Example:
 // findRefIf(entries, [](const Entry&) -> bool { return true; });
 template<std::ranges::contiguous_range R,
 	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
 	requires std::ranges::sized_range<R>
-[[nodiscard]] std::optional<T*> findRevIf(R&& v, std::predicate<T> auto pred) {
+[[nodiscard]] T* findRevIf(R&& v, std::predicate<T> auto pred) {
 	auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
-	return (foundIt == v.rend()) ? std::nullopt : std::optional{&(*foundIt)};
+	return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 }
 
 // Creates a vector and calls reserve().

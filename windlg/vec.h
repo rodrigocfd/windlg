@@ -157,6 +157,26 @@ template<std::ranges::contiguous_range R,
 	return (foundIt == v.rend()) ? std::nullopt : std::optional{std::distance(foundIt, std::prev(v.rend()))};
 }
 
+// Returns the index of the first element where the entire sequence matches the following elements.
+template<std::ranges::contiguous_range R,
+	typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> >
+	requires std::ranges::sized_range<R>
+[[nodiscard]] std::optional<size_t> positionSeq(R&& v,
+		std::initializer_list<const std::type_identity_t<T>> sequence) {
+	for (size_t i = 0; i <= v.size() - sequence.size(); ++i) {
+		bool found = true;
+		for (size_t e = 0; e < sequence.size(); ++e) {
+			if (v[e + i] != *(sequence.begin() + e)) {
+				found = false;
+				break;
+			}
+		}
+		if (found)
+			return {i};
+	}
+	return std::nullopt;
+}
+
 // Removes the element at the given index.
 template<typename T>
 void remove(std::vector<T>& v, size_t index) {

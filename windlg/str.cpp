@@ -72,9 +72,23 @@ LPCWSTR lib::str::guessLineBreak(std::wstring_view s)
 
 std::wstring lib::str::join(std::span<std::wstring> all, std::wstring_view separator)
 {
-	std::wstring buf;
+	size_t count = 0;
 	bool first = true;
-	for (const auto& s : all) {
+
+	for (const std::wstring& s : all) {
+		if (first) {
+			first = false;
+		} else {
+			count += separator.length();
+		}
+		count += s.length();
+	}
+
+	std::wstring buf;
+	buf.reserve(count);
+	first = true;
+
+	for (const std::wstring& s : all) {
 		if (first) {
 			first = false;
 		} else {

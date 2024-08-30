@@ -144,6 +144,12 @@ void File::EraseAndWriteStr(std::wstring_view path, std::wstring_view contents)
 	EraseAndWrite(path, raw);
 }
 
+void File::EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, LPCWSTR br)
+{
+	std::wstring joined = str::join(lines, br) + br; // add final linebreak
+	EraseAndWriteStr(path, joined);
+}
+
 
 FileMapped& FileMapped::operator=(FileMapped&& other) noexcept
 {
@@ -212,4 +218,10 @@ std::wstring FileMapped::ReadAllStr(std::wstring_view path)
 {
 	FileMapped f{path, Access::ExistingReadOnly};
 	return str::parse(f.asSpan());
+}
+
+std::vector<std::wstring> FileMapped::ReadAllLines(std::wstring_view path)
+{
+	std::wstring contents = ReadAllStr(path);
+	return str::splitLines(contents);
 }

@@ -42,6 +42,7 @@ public:
 
 	static void EraseAndWrite(std::wstring_view path, std::span<BYTE> contents);
 	static void EraseAndWriteStr(std::wstring_view path, std::wstring_view contents);
+	static void EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, LPCWSTR br = L"\r\n");
 
 private:
 	HANDLE _hFile = nullptr;
@@ -75,6 +76,7 @@ public:
 
 	[[nodiscard]] static std::vector<BYTE> ReadAll(std::wstring_view path);
 	[[nodiscard]] static std::wstring ReadAllStr(std::wstring_view path);
+	[[nodiscard]] static std::vector<std::wstring> ReadAllLines(std::wstring_view path);
 
 private:
 	File _file;

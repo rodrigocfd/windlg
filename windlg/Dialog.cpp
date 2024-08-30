@@ -172,19 +172,21 @@ void Dialog::Layout::add(Horz horz, Vert vert, std::initializer_list<WORD> ctrlI
 		return;
 	}
 
-	if (_ctrls.empty()) { // first controls being added
+	if (_ctrls.empty()) { // first controls being added, save original parent dimensions
 		RECT rc{};
 		GetClientRect(_pDlg->hWnd(), &rc);
 		_szParentOrig = {.cx = rc.right, .cy = rc.bottom};
 	}
 
-	for (auto&& ctrlId : ctrlIds) {
+	_ctrls.reserve(_ctrls.size() + ctrlIds.size());
+
+	for (WORD ctrlId : ctrlIds) {
 		HWND hCtrl = GetDlgItem(_pDlg->hWnd(), ctrlId);
 		RECT rc{};
 		GetWindowRect(hCtrl, &rc);
 		ScreenToClient(_pDlg->hWnd(), reinterpret_cast<POINT*>(&rc));
 		ScreenToClient(_pDlg->hWnd(), reinterpret_cast<POINT*>(&rc.right));
-		_ctrls.emplace_back(hCtrl, horz, vert, rc);
+		_ctrls.emplace_back(hCtrl, horz, vert, rc); // save original dimensions of control
 	}
 }
 

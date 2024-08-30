@@ -14,16 +14,18 @@ struct Config final {
 
 static Config _loadIniConfig()
 {
-	auto iniPath = lib::str::fmt(L"%s\\upd-windlg.ini", lib::path::exeDir());
+	lib::Ini ini;
+	ini.load(lib::path::exeDir() + L"\\upd-windlg.ini");
+
 	Config c = {
-		.pathLibWinDlg = lib::ini::readStr(iniPath, L"Paths", L"libWinDlg"),
-		.pathBaseTargets = lib::ini::readStr(iniPath, L"Paths", L"baseTargets"),
+		.pathLibWinDlg = ini.get(L"Paths", L"libWinDlg"),
+		.pathBaseTargets = ini.get(L"Paths", L"baseTargets"),
 	};
 
 	UINT i = 0;
 	for (;;) {
 		try {
-			c.programs.emplace_back( lib::ini::readStr(iniPath, L"Programs", lib::str::fmt(L"p%d", i++)) );
+			c.programs.emplace_back( ini.get(L"Programs", lib::str::fmt(L"p%d", i++)) );
 		} catch (const std::invalid_argument&) {
 			break;
 		}

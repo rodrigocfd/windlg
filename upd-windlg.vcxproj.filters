@@ -21,6 +21,9 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\process.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\windlg\windlg\CheckRadio.cpp">
       <Filter>WinDlg</Filter>
     </ClCompile>
@@ -51,7 +54,7 @@
     <ClCompile Include="..\windlg\windlg\ImgList.cpp">
       <Filter>WinDlg</Filter>
     </ClCompile>
-    <ClCompile Include="..\windlg\windlg\ini.cpp">
+    <ClCompile Include="..\windlg\windlg\Ini.cpp">
       <Filter>WinDlg</Filter>
     </ClCompile>
     <ClCompile Include="..\windlg\windlg\ListView.cpp">
@@ -84,12 +87,15 @@
     <ClCompile Include="..\windlg\windlg\Window.cpp">
       <Filter>WinDlg</Filter>
     </ClCompile>
-    <ClCompile Include="src\process.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\windlg\windlg\ini.h">
+    <ClInclude Include="res\resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\ImgList.h">
+      <Filter>WinDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\windlg\windlg\Ini.h">
       <Filter>WinDlg</Filter>
     </ClInclude>
     <ClInclude Include="..\windlg\windlg\lib.h">
@@ -154,12 +160,6 @@
     </ClInclude>
     <ClInclude Include="..\windlg\windlg\File.h">
       <Filter>WinDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\windlg\windlg\ImgList.h">
-      <Filter>WinDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="res\resource.h">
-      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

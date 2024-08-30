@@ -42,7 +42,7 @@ public:
 
 	static void EraseAndWrite(std::wstring_view path, std::span<BYTE> contents);
 	static void EraseAndWriteStr(std::wstring_view path, std::wstring_view contents);
-	static void EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, LPCWSTR br = L"\r\n");
+	static void EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, std::wstring_view br = L"\r\n");
 
 private:
 	HANDLE _hFile = nullptr;

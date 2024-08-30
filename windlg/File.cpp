@@ -144,9 +144,10 @@ void File::EraseAndWriteStr(std::wstring_view path, std::wstring_view contents)
 	EraseAndWrite(path, raw);
 }
 
-void File::EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, LPCWSTR br)
+void File::EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, std::wstring_view br)
 {
-	std::wstring joined = str::join(lines, br) + br; // add final linebreak
+	std::wstring joined = str::join(lines, br);
+	joined.append(br); // add final linebreak
 	EraseAndWriteStr(path, joined);
 }
 

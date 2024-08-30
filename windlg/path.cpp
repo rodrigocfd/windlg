@@ -46,7 +46,7 @@ std::vector<std::wstring> lib::path::dirList(std::wstring_view pathAndFilter)
 			DWORD err = GetLastError();
 			FindClose(hFind);
 			if (err == ERROR_NO_MORE_FILES) [[likely]] {
-				std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) -> bool {
+				std::sort(entries.begin(), entries.end(), [](const std::wstring& a, const std::wstring& b) -> bool {
 					return lstrcmpiW(a.c_str(), b.c_str()) < 1;
 				});
 				return entries; // no more files found
@@ -86,7 +86,7 @@ std::wstring lib::path::exeDir()
 	GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
 	std::wstring p = dirFrom(buf);
 #ifdef _DEBUG
-	p = dirFrom(p);
+	p = dirFrom(p); // in debug mode, go up another dir level
 #endif
 	return p;
 }

@@ -23,6 +23,14 @@ public:
 	std::optional<std::wstring> iniPath;
 	std::vector<Section> sections;
 
+	constexpr Ini() = default;
+	constexpr Ini(const Ini&) = default;
+	constexpr Ini(Ini&&) = default;
+	constexpr Ini& operator=(const Ini&) = default;
+	constexpr Ini& operator=(Ini&&) = default;
+
+	explicit Ini(std::wstring iniPath) { load(iniPath); }
+
 	[[nodiscard]] const std::wstring& get(std::wstring_view section, std::wstring_view key) const;
 	[[nodiscard]] int getInt(std::wstring_view section, std::wstring_view key) const;
 	void load(std::optional<std::wstring_view> iniPath = std::nullopt);

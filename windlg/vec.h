@@ -199,8 +199,28 @@ template<std::ranges::contiguous_range R,
 	if (v.empty()) return {};
 
 	std::span<T> src{v};
+	size_t count = 0, head = 0;
+	for (;;) {
+		if (maxParts.has_value() && maxParts.value() && count >= maxParts.value() - 1)
+			break;
+
+		std::optional<size_t> maybeHead = position(src, delimiter);
+		if (!maybeHead.has_value()) {
+			break;
+		} else {
+			head = maybeHead.value();
+			++count;
+			++head;
+			src = src.subspan(head);
+		}
+	}
+	++count;
+
 	std::vector<std::span<T>> ret;
-	size_t head = 0;
+	ret.reserve(count);
+	
+	src = v;
+	head = 0;
 	for (;;) {
 		if (maxParts.has_value() && maxParts.value() && ret.size() >= maxParts.value() - 1)
 			break;

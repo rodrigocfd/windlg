@@ -10,8 +10,8 @@ public:
 	virtual ~Window() { }
 
 	constexpr Window() = default;
-	constexpr Window(const Window& other) = default;
-	constexpr Window(Window&& other) = default;
+	constexpr Window(const Window&) = default;
+	constexpr Window(Window&&) = default;
 	constexpr Window& operator=(const Window&) = default;
 	constexpr Window& operator=(Window&&) = default;
 

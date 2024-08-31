@@ -14,8 +14,7 @@ struct Config final {
 
 static Config _loadIniConfig()
 {
-	lib::Ini ini;
-	ini.load(lib::path::exeDir() + L"\\upd-windlg.ini");
+	lib::Ini ini{lib::path::exeDir() + L"\\upd-windlg.ini"};
 
 	Config c = {
 		.pathLibWinDlg = ini.get(L"Paths", L"libWinDlg"),

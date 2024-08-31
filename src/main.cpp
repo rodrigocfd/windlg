@@ -2,43 +2,31 @@
 #include <iostream>
 #include <windlg/lib.h>
 using std::vector, std::wstring, std::wstring_view;
+using namespace lib;
 
 void processSolution(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg);
 void processFilter(wstring_view target, wstring_view baseDirTargets, wstring_view dirLibWinDlg);
 
-struct Config final {
-	wstring pathLibWinDlg;
-	wstring pathBaseTargets;
-	vector<wstring> programs;
-};
-
-static Config _loadIniConfig()
+int main()
 {
-	lib::Ini ini{lib::path::exeDir() + L"\\upd-windlg.ini"};
+	Ini ini{path::exeDir() + L"\\upd-windlg.ini"};
+	wstring pathLibWinDlg = ini.get(L"Paths", L"libWinDlg");
+	wstring pathBaseTargets = ini.get(L"Paths", L"baseTargets");
 
-	Config c = {
-		.pathLibWinDlg = ini.get(L"Paths", L"libWinDlg"),
-		.pathBaseTargets = ini.get(L"Paths", L"baseTargets"),
-	};
-
+	vector<wstring> programs;
 	UINT i = 0;
 	for (;;) {
 		try {
-			c.programs.emplace_back( ini.get(L"Programs", lib::str::fmt(L"p%d", i++)) );
-		} catch (const std::invalid_argument&) {
+			programs.emplace_back( ini.get(L"Programs", str::fmt(L"p%d", i++)) );
+		} catch (const std::out_of_range&) {
 			break;
 		}
 	}
-	return c;
-}
 
-int main()
-{
-	Config c = _loadIniConfig();
-	for (auto&& program : c.programs) {
+	for (auto&& program : programs) {
 		std::wcout << L"Updating " << program << L"..." << std::endl;
-		processSolution(program, c.pathBaseTargets, c.pathLibWinDlg);
-		processFilter(program, c.pathBaseTargets, c.pathLibWinDlg);
+		processSolution(program, pathBaseTargets, pathLibWinDlg);
+		processFilter(program, pathBaseTargets, pathLibWinDlg);
 	}
 
 	std::wcout << L"Press any key...";

@@ -1,21 +1,48 @@
-#include <system_error>
+#include <stdexcept>
 #include <Windows.h>
 #include "File.h"
 #include "ini.h"
 #include "str.h"
 using namespace lib;
 
+const std::wstring& Ini::Section::get(std::wstring_view key) const
+{
+	for (const Section::KeyVal& kv : keysVals) {
+		if (str::eq(key, kv.key))
+			return kv.val;
+	}
+	throw std::out_of_range( str::toAnsi(str::fmt(L"Key not found: %s / %s", name, key)) );
+}
+
+int Ini::Section::getInt(std::wstring_view key) const
+{
+	return std::stoi(get(key));
+}
+
+void Ini::Section::set(std::wstring_view key, std::wstring_view val)
+{
+	for (KeyVal& kv : keysVals) {
+		if (str::eq(key, kv.key)) {
+			kv.val = val;
+			return;
+		}
+	}
+	throw std::out_of_range( str::toAnsi(str::fmt(L"Key not found: %s / %s", name, key)) );
+}
+
+void Ini::Section::setInt(std::wstring_view key, int val)
+{
+	set(key, std::to_wstring(val));
+}
+
+
 const std::wstring& Ini::get(std::wstring_view section, std::wstring_view key) const
 {
 	for (const Section& s : sections) {
-		if (str::eq(section, s.name)) {
-			for (const Section::KeyVal& kv : s.keysVals) {
-				if (str::eq(key, kv.key))
-					return kv.val;
-			}
-		}
+		if (str::eq(section, s.name))
+			return s.get(key);
 	}
-	throw std::out_of_range( str::toAnsi(str::fmt(L"Not found: %s / %s", section, key)) );
+	throw std::out_of_range( str::toAnsi(str::fmt(L"Section not found: %s", section)) );
 }
 
 int Ini::getInt(std::wstring_view section, std::wstring_view key) const
@@ -97,14 +124,12 @@ void Ini::save(std::wstring_view br) const
 void Ini::set(std::wstring_view section, std::wstring_view key, std::wstring_view val)
 {
 	for (Section& s : sections) {
-		for (Section::KeyVal& kv : s.keysVals) {
-			if (str::eq(key, kv.key)) {
-				kv.val = val;
-				return;
-			}
+		if (str::eq(section, s.name)) {
+			s.set(key, val);
+			return;
 		}
 	}
-	throw std::out_of_range( str::toAnsi(str::fmt(L"Not found: %s / %s", section, key)) );
+	throw std::out_of_range( str::toAnsi(str::fmt(L"Section not found: %s", section)) );
 }
 
 void Ini::setInt(std::wstring_view section, std::wstring_view key, int val)

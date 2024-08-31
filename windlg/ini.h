@@ -18,6 +18,11 @@ public:
 
 		std::wstring name;
 		std::vector<KeyVal> keysVals;
+
+		[[nodiscard]] const std::wstring& get(std::wstring_view key) const;
+		[[nodiscard]] int getInt(std::wstring_view key) const;
+		void set(std::wstring_view key, std::wstring_view val);
+		void setInt(std::wstring_view key, int val);
 	};
 
 	std::optional<std::wstring> iniPath;

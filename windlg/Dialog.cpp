@@ -51,21 +51,23 @@ int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstri
 
 const Dialog::Facilities& Dialog::Facilities::registerDragDrop() const
 {
-	if (_pDlg->_usingDropTarget) [[unlikely]] {
+	if (_pDlg->_pDropTarget.ptr()) [[unlikely]] {
 		throw std::logic_error("RegisterDragDrop called twice");
 	}
 
+#ifdef _DEBUG
 	DWORD exStyle = static_cast<DWORD>(GetWindowLongPtrW(_pDlg->hWnd(), GWL_EXSTYLE));
 	if (exStyle & WS_EX_ACCEPTFILES) [[unlikely]] {
 		throw std::invalid_argument("Do not use WS_EX_ACCEPTFILES");
 	}
+#endif
 
-	if (HRESULT hr = RegisterDragDrop(_pDlg->hWnd(), &_pDlg->_dropTarget); hr == E_OUTOFMEMORY) [[unlikely]] {
+	_pDlg->_pDropTarget = new DropTarget{_pDlg};
+	if (HRESULT hr = RegisterDragDrop(_pDlg->hWnd(), _pDlg->_pDropTarget.ptr()); hr == E_OUTOFMEMORY) [[unlikely]] {
 		throw std::runtime_error("RegisterDragDrop failed; did you instantiate lib::ComOle?");
 	} else if (FAILED(hr)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "RegisterDragDrop failed");
 	}
-	_pDlg->_usingDropTarget = true;
 	return *this;
 }
 
@@ -240,7 +242,9 @@ ULONG STDMETHODCALLTYPE Dialog::DropTarget::AddRef()
 
 ULONG STDMETHODCALLTYPE Dialog::DropTarget::Release()
 {
-	return InterlockedDecrement(&_refCount);
+	ULONG c = InterlockedDecrement(&_refCount);
+	if (!_refCount) delete this;
+	return c;
 }
 
 HRESULT STDMETHODCALLTYPE Dialog::DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
@@ -325,7 +329,7 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
 
 	if (uMsg == WM_NCDESTROY) {
-		if (pSelf->_usingDropTarget) RevokeDragDrop(hDlg);
+		if (pSelf->_pDropTarget.ptr()) RevokeDragDrop(hDlg);
 		SetWindowLongPtrW(hDlg, DWLP_USER, 0);
 		*pSelf->_hWndPtr() = nullptr;
 		userRet = TRUE;

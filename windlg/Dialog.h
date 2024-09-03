@@ -5,6 +5,7 @@
 #include <vector>
 #include <Windows.h>
 #include <oleidl.h>
+#include "Com.h"
 #include "Window.h"
 
 namespace lib {
@@ -80,7 +81,7 @@ private:
 		[[nodiscard]] std::vector<std::wstring> _getDropped(HDROP hDrop) const;
 
 		Dialog* _pDlg = nullptr; // assumes Dialog is immovable
-		LONG _refCount = 0;
+		LONG _refCount = 1;
 	};
 
 	class Layout final {
@@ -129,8 +130,7 @@ private:
 	void _runFromOtherThread(LPARAM lp) const;
 	Window::_hWndPtr;
 
-	DropTarget _dropTarget{this};
-	bool _usingDropTarget = false;
+	ComPtr<DropTarget> _pDropTarget;
 	Layout _layout{this};
 };
 

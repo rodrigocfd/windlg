@@ -46,6 +46,8 @@ public:
 	constexpr ComPtr() = default;
 	ComPtr(const ComPtr& other) { operator=(other); }
 	ComPtr(ComPtr&& other) noexcept { operator=(std::forward<ComPtr<T>>(other)); }
+	constexpr explicit ComPtr(T* p) : _p{p} { }
+	explicit ComPtr(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) { coCreateInstance(clsid, clsctx); }
 
 	ComPtr& operator=(const ComPtr& other) {
 		release();
@@ -62,8 +64,11 @@ public:
 		return *this;
 	}
 
-	constexpr explicit ComPtr(T* p) : _p{p} { }
-	explicit ComPtr(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) { coCreateInstance(clsid, clsctx); }
+	ComPtr& operator=(T* p) {
+		release();
+		_p = p; // take ownership
+		return *this;
+	}
 
 	[[nodiscard]] constexpr T* operator->() const { return _p; }
 	[[nodiscard]] constexpr T* ptr() const { return _p; }

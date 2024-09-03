@@ -77,6 +77,8 @@ void Ini::load(std::optional<std::wstring_view> iniPath)
 				Section::KeyVal keyVal;
 				keyVal.key.insert(0, &line[0], idxEq); // extract key name
 				keyVal.val.insert(0, &line[idxEq + 1], line.length() - (idxEq + 1)); // extract value
+				str::trim(keyVal.key);
+				str::trim(keyVal.val);
 				curSection.keysVals.emplace_back(std::move(keyVal));
 			}
 		}

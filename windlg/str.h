@@ -7,6 +7,7 @@
 
 namespace lib::str {
 
+// Default number of characters of a string allocated with Short String Optimization.
 constexpr size_t SSO_LEN = std::string{}.capacity();
 
 [[nodiscard]] int cmp(std::wstring_view a, std::wstring_view b);
@@ -49,7 +50,7 @@ namespace _privfmt {
 	[[nodiscard]] LPCWSTR fmtp(const std::wstring& val);
 }
 
-// String-safe wrapper to std::swprintf().
+// String-safe wrapper to std::swprintf(), which also accepts wstring and wstring_view as arguments.
 template<typename... T>
 [[nodiscard]] std::wstring fmt(std::wstring_view format, const T&... args) {
 	size_t len = std::swprintf(nullptr, 0, format.data(), _privfmt::fmtp(args)...);
@@ -69,6 +70,7 @@ namespace enc {
 		BYTE bomSize = 0;
 	};
 
+	// Guesses the encoding of the given binary blob.
 	[[nodiscard]] Info guess(std::span<BYTE> src);
 }
 

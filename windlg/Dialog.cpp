@@ -52,13 +52,13 @@ int Dialog::Facilities::msgBox(std::wstring_view title, std::optional<std::wstri
 const Dialog::Facilities& Dialog::Facilities::registerDragDrop() const
 {
 	if (_pDlg->_pDropTarget.ptr()) [[unlikely]] {
-		throw std::logic_error("RegisterDragDrop called twice");
+		throw std::logic_error("registerDragDrop() called twice");
 	}
 
 #ifdef _DEBUG
 	DWORD exStyle = static_cast<DWORD>(GetWindowLongPtrW(_pDlg->hWnd(), GWL_EXSTYLE));
 	if (exStyle & WS_EX_ACCEPTFILES) [[unlikely]] {
-		throw std::invalid_argument("Do not use WS_EX_ACCEPTFILES");
+		throw std::invalid_argument("Do not use WS_EX_ACCEPTFILES with registerDragDrop()");
 	}
 #endif
 
@@ -69,24 +69,6 @@ const Dialog::Facilities& Dialog::Facilities::registerDragDrop() const
 		throw std::system_error(GetLastError(), std::system_category(), "RegisterDragDrop failed");
 	}
 	return *this;
-}
-
-void Dialog::Facilities::runDetachedThread(std::function<void()> callback) const
-{
-	std::thread([callback = std::move(callback), this]() {
-		try {
-			callback();
-		} catch (...) {
-			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
-			SendMessageW(_pDlg->hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
-		}
-	}).detach();
-}
-
-void Dialog::Facilities::runUiThread(std::function<void()> callback) const
-{
-	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
-	SendMessageW(_pDlg->hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
 static std::vector<COMDLG_FILTERSPEC> _makeFilters(
@@ -324,7 +306,7 @@ INT_PTR CALLBACK Dialog::_DlgProc(HWND hDlg, UINT uMsg, WPARAM wp, LPARAM lp)
 	pSelf->_layout.processMsgs(uMsg, wp, lp);
 
 	if (uMsg == WM_THREAD && wp == WM_THREAD) // incoming from another thread through SendMessage()
-		pSelf->_runFromOtherThread(lp);
+		pSelf->_onSentFromOtherThread(lp);
 
 	INT_PTR userRet = pSelf->dlgProc(uMsg, wp, lp);
 
@@ -354,17 +336,35 @@ void Dialog::_Lippincott()
 	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }
 
-void Dialog::_runFromOtherThread(LPARAM lp) const
+void Dialog::_launchDetachedThread(std::function<void()> callback) const
+{
+	std::thread([callback = std::move(callback), this]() {
+		try {
+			callback();
+		} catch (...) {
+			auto pPack = std::make_unique<ThreadPack>([]{ }, std::current_exception());
+			SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
+		}
+	}).detach();
+}
+
+void Dialog::_runInUiThread(std::function<void()> callback) const
+{
+	auto pPack = std::make_unique<ThreadPack>(std::move(callback), nullptr);
+	SendMessageW(hWnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
+}
+
+void Dialog::_onSentFromOtherThread(LPARAM lp) const
 {
 	std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-	if (pPack->pCurExcep) { // catching an exception from runDetachedThread()
+	if (pPack->pCurExcep) { // catching an exception from _launchDetachedThread()
 		try {
 			std::rethrow_exception(pPack->pCurExcep);
 		} catch (...) {
 			_Lippincott();
 			PostQuitMessage(1);
 		}
-	} else { // from runUiThread()
+	} else { // from _runInUiThread()
 		try {
 			pPack->callback();
 		} catch (...) {

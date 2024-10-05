@@ -42,10 +42,10 @@ private:
 		const Facilities& registerDragDrop() const;
 
 		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
-		void runDetachedThread(std::function<void()> callback) const;
+		void runDetachedThread(std::function<void()> callback) const { _pDlg->_launchDetachedThread(std::move(callback)); }
 
 		// Blocks the current thread and runs the function in the original UI thread. Catches uncaught exceptions.
-		void runUiThread(std::function<void()> callback) const;
+		void runUiThread(std::function<void()> callback) const { _pDlg->_runInUiThread(std::move(callback)); }
 
 		[[nodiscard]] std::optional<std::wstring> showOpenFile(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const { return _showOpenSave(true, false, namesExts); }
 		[[nodiscard]] std::optional<std::vector<std::wstring>> showOpenFiles(std::initializer_list<std::pair<std::wstring_view, std::wstring_view>> namesExts) const;
@@ -127,7 +127,9 @@ protected:
 	static void _Lippincott();
 
 private:
-	void _runFromOtherThread(LPARAM lp) const;
+	void _launchDetachedThread(std::function<void()> callback) const;
+	void _runInUiThread(std::function<void()> callback) const;
+	void _onSentFromOtherThread(LPARAM lp) const;
 	Window::_hWndPtr;
 
 	ComPtr<DropTarget> _pDropTarget;

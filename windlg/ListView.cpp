@@ -358,7 +358,7 @@ void ListView::ItemCollection::sort(std::function<int(Item, Item)> callback) con
 	};
 	Info nfo = {.lv = ListView{_hList}, .callback = std::move(callback)};
 
-	ListView_SortItemsEx(_hList, [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int {
+	ListView_SortItemsEx(_hList, [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
 		Info* pNfo = reinterpret_cast<Info*>(lp);
 		return pNfo->callback(pNfo->lv.items[static_cast<int>(idxA)],
 			pNfo->lv.items[static_cast<int>(idxB)]);
@@ -468,7 +468,7 @@ LRESULT CALLBACK ListView::_SubclassProc(HWND hList, UINT uMsg,
 	WPARAM wp, LPARAM lp, UINT_PTR idSubclass, DWORD_PTR refData)
 {
 	if (uMsg == WM_GETDLGCODE) {
-		if (lp && wp == VK_RETURN) {
+		if (lp && wp == VK_RETURN) { // Enter key
 			WORD ctrlId = GetDlgCtrlID(hList);
 			NMLVKEYDOWN nmlvkd = {
 				.hdr = {
@@ -479,16 +479,16 @@ LRESULT CALLBACK ListView::_SubclassProc(HWND hList, UINT uMsg,
 				.wVKey = VK_RETURN,
 			};
 			SendMessageW(GetAncestor(hList, GA_PARENT), WM_NOTIFY, ctrlId,
-				reinterpret_cast<LPARAM>(&nmlvkd)); // forward Enter key to parent
+				reinterpret_cast<LPARAM>(&nmlvkd)); // forward to parent
 
 			LRESULT dlgcSystem = DefSubclassProc(hList, WM_GETDLGCODE, wp, lp);
 			return dlgcSystem;
 		}
 	} else if (uMsg == WM_NOTIFY) {
-		NMHDR *hdr = reinterpret_cast<NMHDR*>(lp);
-		if (hdr->code >= HDN_GETDISPINFO && hdr->code <= HDN_BEGINDRAG) {
+		NMHDR* hdr = reinterpret_cast<NMHDR*>(lp);
+		if (hdr->code >= HDN_GETDISPINFO && hdr->code <= HDN_BEGINDRAG) { // all HDN messages
 			hdr->idFrom = GetDlgCtrlID(hList); // replace Header ID with ListView's, easier for DLGPROC
-			SendMessageW(GetAncestor(hList, GA_PARENT), WM_NOTIFY, wp, lp); // forward HDN messages to parent
+			SendMessageW(GetAncestor(hList, GA_PARENT), WM_NOTIFY, wp, lp); // simply forward to parent
 		}
 	} else if (uMsg == WM_NCDESTROY) {
 		RemoveWindowSubclass(hList, _SubclassProc, idSubclass);

@@ -429,29 +429,29 @@ lib::str::enc::Info lib::str::enc::guess(std::span<BYTE> src)
 {
 	auto match = [&](std::span<BYTE> bom) constexpr -> bool {
 		return (src.size() >= bom.size())
-			&& std::equal(src.begin(), src.end(), bom.begin(), bom.end());
+			&& std::equal(src.begin(), src.begin() + bom.size(), bom.begin(), bom.end());
 	};
 
 	BYTE utf8[] = {0xef, 0xbb, 0xbf}; // UTF-8 BOM
 	if (match(utf8)) return {Type::Utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
 
 	BYTE utf16be[] = {0xfe, 0xff};
-	if (match(utf16be)) return {Type::Utf16be, ARRAYSIZE(utf8)};
+	if (match(utf16be)) return {Type::Utf16be, ARRAYSIZE(utf16be)};
 
 	BYTE utf16le[] = {0xff, 0xfe};
-	if (match(utf16le)) return {Type::Utf16le, ARRAYSIZE(utf8)};
+	if (match(utf16le)) return {Type::Utf16le, ARRAYSIZE(utf16le)};
 
 	BYTE utf32be[] = {0x00, 0x00, 0xfe, 0xff};
-	if (match(utf32be)) return {Type::Utf32be, ARRAYSIZE(utf8)};
+	if (match(utf32be)) return {Type::Utf32be, ARRAYSIZE(utf32be)};
 
 	BYTE utf32le[] = {0xff, 0xfe, 0x00, 0x00};
-	if (match(utf32le)) return {Type::Utf32le, ARRAYSIZE(utf8)};
+	if (match(utf32le)) return {Type::Utf32le, ARRAYSIZE(utf32le)};
 
 	BYTE scsu[] = {0x0e, 0xfe, 0xff};
-	if (match(scsu)) return {Type::Scsu, ARRAYSIZE(utf8)};
+	if (match(scsu)) return {Type::Scsu, ARRAYSIZE(scsu)};
 
 	BYTE bocu1[] = {0xfb, 0xee, 0x28};
-	if (match(bocu1)) return {Type::Bocu1, ARRAYSIZE(utf8)};
+	if (match(bocu1)) return {Type::Bocu1, ARRAYSIZE(bocu1)};
 
 	if (_guessUtf8(src)) return {Type::Utf8, 0}; // UTF-8 without BOM
 

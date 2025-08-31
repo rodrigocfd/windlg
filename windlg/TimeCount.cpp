@@ -3,7 +3,7 @@
 #include "TimeCount.h"
 using namespace lib;
 
-LONGLONG TimeCount::_Freq = 0;
+static LONGLONG _freq = 0;
 
 TimeCount TimeCount::Immediately()
 {
@@ -14,14 +14,15 @@ TimeCount TimeCount::Immediately()
 
 void TimeCount::restart()
 {
-	LARGE_INTEGER freq{}, t0{};
-	if (!_Freq) {
-		if (!QueryPerformanceFrequency(&freq)) [[unlikely]] {
+	if (!_freq) { // frequency not cached yet?
+		LARGE_INTEGER theFreq{};
+		if (!QueryPerformanceFrequency(&theFreq)) [[unlikely]] {
 			throw std::system_error(GetLastError(), std::system_category(), "QueryPerformanceFrequency failed");
 		}
-		_Freq = freq.QuadPart;
+		_freq = theFreq.QuadPart; // cache frequency
 	}
 
+	LARGE_INTEGER t0;
 	QueryPerformanceCounter(&t0);
 	_t0 = t0.QuadPart;
 }
@@ -30,7 +31,7 @@ TimeCount::Duration TimeCount::now() const
 {
 	LARGE_INTEGER t1{};
 	QueryPerformanceCounter(&t1);
-	auto ms = static_cast<LONGLONG>(std::round( (t1.QuadPart - _t0) / (_Freq / 1000.) ));
+	auto ms = static_cast<LONGLONG>(std::round( (t1.QuadPart - _t0) / (_freq / 1000.) ));
 
 	Duration dur{};
 	dur.ms = ms % 1000;

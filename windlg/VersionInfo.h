@@ -16,12 +16,12 @@ public:
 		WORD codePage;
 	};
 
+	VersionInfo();
 	VersionInfo(const VersionInfo&) = delete;
 	VersionInfo(VersionInfo&&) = delete;
 	VersionInfo& operator=(const VersionInfo&) = delete;
 	VersionInfo& operator=(VersionInfo&&) = delete;
-
-	VersionInfo();
+	
 	explicit VersionInfo(std::wstring_view exePath) { _load(exePath); }
 
 	[[nodiscard]] constexpr std::span<const LangCp> langsCps() const { return _langsCps; }

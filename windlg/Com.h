@@ -8,7 +8,7 @@ namespace lib {
 void checkHr(HRESULT hr, std::string_view funcName = "HRESULT");
 
 
-// Calls CoInitializeEx() and CoUninitialize().
+// Calls CoInitializeEx() immediately, and CoUninitialize() on the destructor.
 class Com final {
 public:
 	~Com();
@@ -22,7 +22,7 @@ public:
 };
 
 
-// Calls OleInitialize() and OleUninitialize().
+// Calls OleInitialize() immediately, and OleUninitialize() on the destructor.
 class ComOle final {
 public:
 	~ComOle();
@@ -80,7 +80,7 @@ public:
 		checkHr(CoCreateInstance(clsid, nullptr, clsctx, IID_PPV_ARGS(&_p)), "CoCreateInstance");
 	}
 
-	// Creates the COM pointer with QueryInterface().
+	// Returns a new COM pointer with QueryInterface().
 	template<typename Q>
 		requires std::is_base_of_v<IUnknown, Q>
 	[[nodiscard]] ComPtr<Q> queryInterface() const {

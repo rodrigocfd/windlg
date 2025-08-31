@@ -49,7 +49,7 @@ void VersionInfo::_load(std::wstring_view exePath)
 	if (!szData) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileVersionInfoSize failed");
 	}
-	_data.resize(szData, 0x00);
+	_data.resize(szData, 0x00); // alloc receiving buffer
 	if (!GetFileVersionInfoW(exePath.data(), 0, szData, _data.data())) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileVersionInfo failed");
 	}
@@ -61,5 +61,5 @@ void VersionInfo::_load(std::wstring_view exePath)
 		throw std::runtime_error("\\VarFileInfo\\Translation not found");
 	}
 	UINT numElems = szBlock / sizeof(LangCp);
-	_langsCps = std::span{pLangCp, numElems};
+	_langsCps = std::span{pLangCp, numElems}; // create a span over the receiving buffer
 }

@@ -34,7 +34,6 @@ public:
 private:
 	constexpr TimeCount() = default;
 
-	static LONGLONG _Freq;
 	LONGLONG _t0 = 0;
 };
 

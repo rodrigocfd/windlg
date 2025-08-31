@@ -9,6 +9,7 @@ namespace lib {
 // Handles sections and entries of an INI file.
 class Ini final {
 public:
+	// A section of an INI file.
 	class Section final {
 	public:
 		struct KeyVal final {

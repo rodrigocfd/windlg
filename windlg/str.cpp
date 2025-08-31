@@ -180,8 +180,8 @@ std::wstring lib::str::parse(std::span<BYTE> src)
 
 void lib::str::removeDiacritics(std::wstring& s)
 {
-	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåĞğÑñØøİı";
-	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYy";
+	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåĞğÑñØøİıÿ";
+	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
 
 	for (WCHAR& ch : s) {
 		LPCWSTR pDiac = diacritics;
@@ -210,14 +210,14 @@ std::vector<std::wstring> lib::str::split(std::wstring_view s, std::wstring_view
 	}
 
 	std::vector<std::wstring> ret;
-	ret.reserve(count);
+	ret.reserve(count); // prealloc the number of substrings
 
 	base = head = 0;
-	for (;;) { // 2nd pass will append the parts
+	for (;;) { // 2nd pass will append the substrings
 		head = s.find(delimiter, head);
 		if (head == std::wstring::npos) break;
-		ret.emplace_back();
-		ret.back().insert(0, s, base, head - base);
+		ret.emplace_back(); // append empty string to vector
+		ret.back().insert(0, s, base, head - base); // insert chars into last appended string
 		head += delimiter.length();
 		base = head;
 	}
@@ -277,7 +277,7 @@ std::vector<BYTE> lib::str::toUtf8Blob(std::wstring_view s, bool writeBom)
 
 	if (!s.empty()) {
 		constexpr BYTE utf8bom[] = {0xef, 0xbb, 0xbf};
-		size_t szBom = writeBom ? ARRAYSIZE(utf8bom) : 0;
+		size_t szBom = writeBom ? ARRAYSIZE(utf8bom) : 0; // zero if we won't write the BOM
 
 		size_t neededLen = WideCharToMultiByte(CP_UTF8, 0,
 			s.data(), static_cast<int>(s.length()),

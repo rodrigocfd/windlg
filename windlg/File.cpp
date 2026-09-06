@@ -1,228 +1,553 @@
-#include <system_error>
-#include "File.h"
-#include "str.h"
-using namespace lib;
+#include <algorithm>
+#include "file.hpp"
+#include "win-error.hpp"
+using namespace wd;
 
-File& File::operator=(File&& other) noexcept
-{
+#ifdef _MSC_VER
+#pragma comment(lib, "version.lib")
+#endif
+
+File& File::operator=(File &&other) noexcept {
 	close();
 	std::swap(_hFile, other._hFile);
 	return *this;
 }
 
-void File::close() noexcept
-{
+File& File::close() noexcept {
 	if (_hFile) {
 		CloseHandle(_hFile);
 		_hFile = nullptr;
 	}
+	return *this;
 }
 
-File& File::open(std::wstring_view path, Access access)
-{
+HANDLE File::leak() noexcept {
+	HANDLE h = _hFile;
+	_hFile = nullptr;
+	return h;
+}
+
+File& File::open_read_only(StrView filePath) {
 	close();
-	DWORD acc = 0, share = 0, disp = 0;
-
-	switch (access) {
-	case Access::ExistingReadOnly:
-		acc = GENERIC_READ;
-		share = FILE_SHARE_READ;
-		disp = OPEN_EXISTING;
-		break;
-	case Access::ExistingRW:
-		acc = GENERIC_READ | GENERIC_WRITE;
-		disp = OPEN_EXISTING;
-		break;
-	case Access::OpenOrCreateRW:
-		acc = GENERIC_READ | GENERIC_WRITE;
-		disp = OPEN_ALWAYS;
-		break;
-	case Access::CreateRW:
-		acc = GENERIC_READ | GENERIC_WRITE;
-		disp = CREATE_NEW;
-	}
-
-	_hFile = CreateFileW(path.data(), acc, share, nullptr, disp, FILE_ATTRIBUTE_NORMAL, nullptr);
+	_hFile = CreateFileW(filePath.c_str(), GENERIC_READ,
+		FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!_hFile || _hFile == INVALID_HANDLE_VALUE) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateFile failed");
+		throw WinErr{GetLastError(), L"CreateFile failed."};
 	}
 	return *this;
 }
 
-size_t File::pointerOffset() const
-{
-	LARGE_INTEGER zeroOffset{}, curOffset{};
-	if (!SetFilePointerEx(_hFile, zeroOffset, &curOffset, FILE_CURRENT)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
+File& File::open_rw(StrView filePath) {
+	close();
+	_hFile = CreateFileW(filePath.c_str(), GENERIC_READ | GENERIC_WRITE,
+		0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (!_hFile || _hFile == INVALID_HANDLE_VALUE) [[unlikely]] {
+		throw WinErr{GetLastError(), L"CreateFile failed."};
 	}
-	return static_cast<size_t>(curOffset.QuadPart);
+	return *this;
 }
 
-std::vector<BYTE> File::readAll() const
-{
-	setPointerOffset(0);
-	std::vector<BYTE> buf(size(), 0x00);
-	readBuffer(buf);
+std::vector<BYTE> File::read(size_t numBytes) const {
+	DWORD read = 0;
+	std::vector<BYTE> buf(std::min(numBytes, size()), 0x00);
+
+	if (!ReadFile(_hFile, buf.data(), static_cast<DWORD>(buf.size()), &read, nullptr)) [[unlikely]] {
+		throw WinErr{GetLastError(), L"ReadFile failed."};
+	}
+
 	return buf;
 }
 
-const File& File::readBuffer(std::vector<BYTE>& buffer) const
-{
-	DWORD read = 0;
-	if (!ReadFile(_hFile, buffer.data(), static_cast<DWORD>(buffer.size()), &read, nullptr)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "ReadFile failed");
-	}
-	return *this;
-}
-
-const File& File::setPointerOffset(size_t offset) const
-{
-	LARGE_INTEGER off = {.QuadPart = static_cast<LONGLONG>(offset)};
-	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
-	}
-	return *this;
-}
-
-const File& File::setSize(size_t newSizeBytes) const
-{
-	setPointerOffset(newSizeBytes);
-	if (!SetEndOfFile(_hFile)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetEndOfFile failed");
-	}
-	return *this;
-}
-
-size_t File::size() const
-{
+size_t File::size() const {
 	LARGE_INTEGER sz{};
 	if (!GetFileSizeEx(_hFile, &sz)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx failed");
+		throw WinErr{GetLastError(), L"GetFileSizeEx failed."};
 	}
 	return static_cast<size_t>(sz.QuadPart);
 }
 
-File::Times File::times() const
-{
-	FILETIME ftCreation{}, ftLastAccess{}, ftLastWrite{};
-	if (!GetFileTime(_hFile, &ftCreation, &ftLastAccess, &ftLastWrite)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
+FILETIME File::time_created() const {
+	FILETIME ftUtc{}, ftLocal{};
+	if (!GetFileTime(_hFile, &ftUtc, nullptr, nullptr)) [[unlikely]] {
+		throw WinErr{GetLastError(), L"GetFileTime failed."};
 	}
-
-	SYSTEMTIME stCreationUtc{}, stLastAccessUtc{}, stLastWriteUtc{};
-	FileTimeToSystemTime(&ftCreation, &stCreationUtc);
-	FileTimeToSystemTime(&ftLastAccess, &stLastAccessUtc);
-	FileTimeToSystemTime(&ftLastWrite, &stLastWriteUtc);
-
-	Times ret;
-	SystemTimeToTzSpecificLocalTime(nullptr, &stCreationUtc, &ret.creation);
-	SystemTimeToTzSpecificLocalTime(nullptr, &stLastAccessUtc, &ret.lastAccess);
-	SystemTimeToTzSpecificLocalTime(nullptr, &stLastWriteUtc, &ret.lastWrite);
-	
-	return ret;
+	FileTimeToLocalFileTime(&ftUtc, &ftLocal);
+	return ftLocal;
 }
 
-const File& File::write(std::span<BYTE> data) const
-{
+FILETIME File::time_last_write() const {
+	FILETIME ftUtc{}, ftLocal{};
+	if (!GetFileTime(_hFile, nullptr, nullptr, &ftUtc)) [[unlikely]] {
+		throw WinErr{GetLastError(), L"GetFileTime failed."};
+	}
+	FileTimeToLocalFileTime(&ftUtc, &ftLocal);
+	return ftLocal;
+}
+
+File& File::truncate() {
+	LARGE_INTEGER off{}; // zero
+	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
+		throw WinErr{GetLastError(), L"GetFileTime failed."};
+	}
+	return *this;
+}
+
+File& File::write(const BYTE *pSrc, size_t numBytes) {
 	DWORD written = 0;
-	if (!WriteFile(_hFile, data.data(), static_cast<DWORD>(data.size_bytes()), &written, nullptr)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "WriteFile failed");
+	if (!WriteFile(_hFile, pSrc, static_cast<DWORD>(numBytes), &written, nullptr)) [[unlikely]] {
+		throw WinErr{GetLastError(), L"WriteFile failed."};
 	}
 	return *this;
 }
 
-void File::EraseAndWrite(std::wstring_view path, std::span<BYTE> contents)
-{
-	File f{path, Access::OpenOrCreateRW};
-	f.setSize(0); // sizing to contents was appending several zero bytes to the file content
-	f.write(contents);
+
+std::wstring wd::file::dir_from(StrView filePath) {
+	if (filePath.empty()) [[unlikely]] {
+		return {};
+	}
+
+	const size_t slashIdx = filePath.find_last_of(L"\\");
+	if (slashIdx == StrView::npos) [[unlikely]] {
+		return {}; // the whole string is the filename
+	}
+
+	return filePath.substr(0, slashIdx); // won't include trailing backslash
 }
 
-void File::EraseAndWriteStr(std::wstring_view path, std::wstring_view contents)
-{
-	std::vector<BYTE> raw{str::toUtf8Blob(contents)};
-	EraseAndWrite(path, raw);
+std::wstring wd::file::exe_dir() {
+	WCHAR buf[MAX_PATH] = {0};
+	GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
+	std::wstring theDir = dir_from(buf);
+#ifdef _DEBUG
+	theDir = dir_from(theDir); // in debug mode, go up another dir level
+#endif
+	return theDir;
 }
 
-void File::EraseAndWriteLines(std::wstring_view path, std::vector<std::wstring> lines, std::wstring_view br)
-{
-	std::wstring joined = str::join(lines, br);
-	joined.append(br); // add final linebreak
-	EraseAndWriteStr(path, joined);
+bool wd::file::exists(StrView filePath) noexcept {
+	return GetFileAttributesW(filePath.c_str()) != INVALID_FILE_ATTRIBUTES;
+}
+
+std::wstring wd::file::filename_from(StrView filePath) {
+	if (filePath.empty()) [[unlikely]] {
+		return {};
+	}
+
+	const size_t slashIdx = filePath.find_last_of(L"\\");
+	if (slashIdx == StrView::npos) [[unlikely]] {
+		return std::wstring{filePath}; // the whole string is the filename
+	}
+
+	return filePath.substr(slashIdx + 1);
+}
+
+bool wd::file::is_dir(StrView filePath) noexcept {
+	const DWORD attrs = GetFileAttributesW(filePath.c_str());
+	return attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+std::vector<BYTE> wd::file::read(StrView filePath) {
+	File f{};
+	f.open_read_only(filePath);
+	std::vector<BYTE> blob = f.read();
+	return blob;
+}
+
+std::wstring wd::file::read_ini(StrView iniPath, StrView section, StrView key) {
+	DWORD sz = 20;
+	std::wstring buf{}; // to be returned
+
+	for (;;) {
+		buf.resize(sz);
+		DWORD nChars = GetPrivateProfileStringW(section.c_str(), key.c_str(),
+			L"", buf.data(), sz, iniPath.c_str());
+
+		DWORD err = GetLastError();
+		if (!nChars && err != ERROR_SUCCESS) [[unlikely]] {
+			throw WinErr{err, L"GetPrivateProfileString failed."};
+		}
+
+		if (nChars < sz - 1)
+			return buf;
+
+		sz *= 2; // grow buffer and keep trying
+	}
+}
+
+std::wstring wd::file::remove_ext(StrView filePath) {
+	std::wstring path2{filePath};
+	if (size_t dotPos = path2.find_last_of(L'.'); dotPos != std::wstring::npos) [[likely]] {
+		path2.resize(dotPos);
+	}
+	return path2;
+}
+
+size_t wd::file::size(StrView filePath) {
+	File f{};
+	f.open_read_only(filePath);
+	return f.size();
+}
+
+FILETIME wd::file::time_created(StrView filePath) {
+	File f{};
+	f.open_read_only(filePath);
+	return f.time_created();
+}
+
+FILETIME wd::file::time_last_write(StrView filePath) {
+	File f{};
+	f.open_read_only(filePath);
+	return f.time_last_write();
+}
+
+void wd::file::write(StrView filePath, const BYTE *pSrc, size_t numBytes) {
+	File f{};
+	f.open_rw(filePath);
+	f.truncate();
+	f.write(pSrc, numBytes);
+}
+
+void wd::file::write_ini(StrView iniPath, StrView section, StrView key, StrView val) {
+	if (!WritePrivateProfileStringW(section.c_str(), key.c_str(), val.c_str(), iniPath.c_str())) [[unlikely]] {
+		throw WinErr{GetLastError(), L"WritePrivateProfileString failed."};
+	}
 }
 
 
-FileMapped& FileMapped::operator=(FileMapped&& other) noexcept
-{
-	close();
-	std::swap(_file, other._file);
-	std::swap(_hMap, other._hMap);
-	std::swap(_pMem, other._pMem);
-	std::swap(_sz, other._sz);
+DirList::Iter& DirList::Iter::operator++() {
+	if (_pDirList) {
+		_pDirList->_advance();
+		_check_finished_and_grab_wfd();
+	}
 	return *this;
 }
 
-void FileMapped::close() noexcept
-{
-	_sz = 0;
-	if (_pMem) {
-		UnmapViewOfFile(_pMem);
-		_pMem = nullptr;
-	}
-	if (_hMap) {
-		CloseHandle(_hMap);
-		_hMap = nullptr;
-	}
-	_file.close();
+bool DirList::Iter::operator==(const Iter &other) const noexcept {
+	if (!_pDirList && !other._pDirList)
+		return true;
+	if (!_pDirList || !other._pDirList)
+		return false;
+	return _pDirList == other._pDirList;
 }
 
-FileMapped& FileMapped::open(std::wstring_view path, Access access)
+DirList::Iter::Iter(DirList *pDirList)
+	: _pDirList{pDirList}, _curFullPath{}
 {
-	close();
-	File::Access facc = (access == Access::ExistingReadOnly) ? File::Access::ExistingReadOnly : File::Access::ExistingRW;
-	DWORD page = (access == Access::ExistingReadOnly) ? PAGE_READONLY : PAGE_READWRITE;
+	if (_pDirList)
+		_check_finished_and_grab_wfd(); // grab the first result immediately
+}
 
-	_file.open(path, facc);
+void DirList::Iter::_check_finished_and_grab_wfd() {
+	if (!_pDirList || !_pDirList->_hFind) { // search ended
+		_pDirList = nullptr;
+		_curFullPath.clear();
+	} else {
+		_curFullPath.reserve(MAX_PATH); // arbitrary
+		_curFullPath = _pDirList->_basePath; // has trailing backslash
+		_curFullPath += _pDirList->_wfd.cFileName;
+	}
+}
 
-	_hMap = CreateFileMappingW(_file.hFile(), nullptr, page, 0, 0, nullptr);
-	if (!_hMap) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateFileMapping failed");
+
+DirList::~DirList() {
+	if (_hFind) {
+		FindClose(_hFind);
+		_hFind = nullptr;
+	}
+}
+
+DirList::DirList(StrView dirPath)
+	: _dirPath{dirPath}, _hFind{nullptr}, _wfd{}, _basePath{}
+{
+	static_assert(std::input_iterator<DirList::Iter>); // check our iterator integrity
+
+	if (_dirPath.empty()) // from default ctor, will yield no results
+		return;
+
+	if (!file::is_dir(_dirPath)) [[unlikely]] {
+		throw WinErr{ERROR_BAD_ARGUMENTS, str::fmt(L"Not a directory: %s", _dirPath)};
 	}
 
-	_pMem = MapViewOfFile(_hMap, FILE_MAP_READ | (access == Access::ExistingRW ? FILE_MAP_WRITE : 0), 0, 0, 0);
-	if (!_pMem) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "MapViewOfFile failed");
+	std::wstring userPath{_dirPath}; // copy
+	if (!userPath.ends_with(L'\\'))
+		userPath.push_back(L'\\');
+	_basePath = userPath; // to concat the found filenames, ends in backslash
+	userPath.push_back(L'*');
+
+	_hFind = FindFirstFileW(userPath.c_str(), &_wfd);
+	if (_hFind == INVALID_HANDLE_VALUE) {
+		const DWORD err = GetLastError();
+		if (err == ERROR_FILE_NOT_FOUND) [[likely]] { // no files found
+			_hFind = nullptr;
+		} else [[unlikely]] {
+			throw WinErr{err, L"FindFirstFile failed."};
+		}
 	}
 
-	_sz = _file.size();
+	StrView fileName{_wfd.cFileName};
+	while ((fileName == L"." || fileName == L"..") && _hFind) // skip these
+		_advance();
+}
+
+void DirList::_advance() {
+	if (_hFind && !FindNextFileW(_hFind, &_wfd)) {
+		const DWORD err = GetLastError();
+		if (err == ERROR_NO_MORE_FILES) [[likely]] { // end of search
+			FindClose(_hFind);
+			_hFind = nullptr;
+		} else [[unlikely]] {
+			throw WinErr{err, L"FindNextFile failed."};
+		}
+	}
+}
+
+
+DirListDeep::Iter& DirListDeep::Iter::operator++() {
+	if (_pDirListDeep) {
+		_pDirListDeep->_advance();
+		_check_finished_and_grab_wfd();
+	}
 	return *this;
 }
 
-constexpr const std::span<BYTE> FileMapped::asSpan() const
-{
-	return std::span{reinterpret_cast<BYTE*>(_pMem), size()};
+bool DirListDeep::Iter::operator==(const Iter &other) const noexcept {
+	if (!_pDirListDeep && !other._pDirListDeep)
+		return true;
+	if (!_pDirListDeep || !other._pDirListDeep)
+		return false;
+	return _pDirListDeep == other._pDirListDeep;
 }
 
-std::span<BYTE> FileMapped::asSpan()
+DirListDeep::Iter::Iter(DirListDeep *pDirListDeep)
+	: _pDirListDeep{pDirListDeep}, _curFullPath{}
 {
-	return std::span{reinterpret_cast<BYTE*>(_pMem), size()};
+	if (_pDirListDeep)
+		_check_finished_and_grab_wfd(); // grab the first result immediately
 }
 
-std::vector<BYTE> FileMapped::ReadAll(std::wstring_view path)
-{
-	FileMapped f{path, Access::ExistingReadOnly};
-	std::span<BYTE> raw = f.asSpan();
-	return {raw.begin(), raw.end()};
+void DirListDeep::Iter::_check_finished_and_grab_wfd() {
+	if (!_pDirListDeep || _pDirListDeep->_finished()) { // search ended
+		_pDirListDeep = nullptr;
+		_curFullPath.clear();
+	} else {
+		_curFullPath.reserve(MAX_PATH); // arbitrary
+		_curFullPath = _pDirListDeep->_curFullPath();
+	}
 }
 
-std::wstring FileMapped::ReadAllStr(std::wstring_view path)
-{
-	FileMapped f{path, Access::ExistingReadOnly};
-	return str::parse(f.asSpan());
+
+DirListDeep::~DirListDeep() noexcept {
+	if (_pDeepIter)
+		delete _pDeepIter;
+	if (_pDeepList)
+		delete _pDeepList;
 }
 
-std::vector<std::wstring> FileMapped::ReadAllLines(std::wstring_view path)
+DirListDeep::DirListDeep(StrView dirPath)
+	: _flatList{dirPath}, _flatIter{_flatList.begin()}, _pDeepList{nullptr}, _pDeepIter{nullptr}
 {
-	std::wstring contents = ReadAllStr(path);
-	return str::splitLines(contents);
+	_check_subfolder();
+}
+
+void DirListDeep::_check_subfolder() {
+	const std::wstring &curFullPath = *_flatIter;
+	if (file::is_dir(curFullPath)) {
+		if (_pDeepList) {
+			_pDeepIter->~Iter();
+			_pDeepList->~DirListDeep();
+			_pDeepList = new (_pDeepList) DirListDeep{curFullPath}; // reuse memory; recursively
+			_pDeepIter = new (_pDeepIter) Iter{_pDeepList};
+		} else {
+			_pDeepList = new DirListDeep{curFullPath}; // recursively
+			_pDeepIter = new DirListDeep::Iter{_pDeepList};
+		}
+	}
+}
+
+void DirListDeep::_advance() {
+	if (_pDeepList) {
+		++(*_pDeepIter);
+		if (*_pDeepIter == DirListDeep{}.end()) { // deep search ended
+			delete _pDeepIter; _pDeepIter = nullptr;
+			delete _pDeepList; _pDeepList = nullptr;
+			++_flatIter;
+			_check_subfolder();
+		}
+	} else {
+		++_flatIter;
+		_check_subfolder();
+	}
+}
+
+
+const IniFile::Entry* IniFile::Section::get(StrView keyName) const noexcept {
+	for (auto &&entry : entries) {
+		if (entry.key == keyName)
+			return &entry;
+	}
+	return nullptr; // not found
+}
+
+std::wstring IniFile::Section::read_str(StrView keyName) const {
+	const Entry *pEntry = get(keyName);
+	if (!pEntry) [[unlikely]] {
+		throw WinErr{ERROR_BAD_ARGUMENTS, L"Entry not found."};
+	}
+	return pEntry->val;
+}
+
+IniFile::Section& IniFile::Section::_raw_write(StrView keyName, std::wstring &&val) {
+	if (Entry *pEntry = get(keyName); !pEntry) {
+		entries.emplace_back(std::wstring{keyName}, std::move(val)); // insert new
+	} else {
+		pEntry->val = std::move(val);
+	}
+	return *this;
+}
+
+IniFile& IniFile::load(StrView iniPath) {
+	const std::vector<BYTE> rawContents = file::read(iniPath);
+	const std::wstring strContents = str::parse(rawContents);
+	std::vector<std::wstring> lines = str::split_lines(strContents);
+
+	Section curSection{};
+	for (auto &&line : lines) {
+		str::trim_spaces(line);
+		if (line.empty() || line[0] == L'#' || line[0] == L';')
+			continue; // skip blank and comment
+
+		if (line[0] == L'[' && line.back() == L']') { // [section] ?
+			if (!curSection.name.empty()) {
+				sections.emplace_back(std::move(curSection));
+				curSection = Section{};
+			}
+			curSection.name = line.substr(1, line.length() - 2); // begin new section
+		} else if (!curSection.name.empty()) {
+			std::vector<std::wstring> keyVal = str::split_n(line, L"=", 2);
+			curSection.entries.emplace_back(std::move(keyVal[0]), std::move(keyVal[1])); // new entry
+		}
+	}
+
+	if (!curSection.name.empty()) // for the last section
+		sections.emplace_back(std::move(curSection));
+
+	_iniPath = iniPath; // store path
+	return *this;
+}
+
+IniFile& IniFile::save_as(StrView newIniPath, StrView lineBreak) {
+	if (newIniPath.empty())
+		throw WinErr{ERROR_BAD_ARGUMENTS, L"INI path not defined."};
+
+	size_t sz = 0;
+	for (auto &&sec : sections) { // 1st pass counts size
+		sz += 1 + sec.name.length() + 1 + lineBreak.length();
+		for (auto &&kv : sec.entries)
+			sz += kv.key.length() + 1 + kv.val.length() + lineBreak.length();
+		sz += lineBreak.length();
+	}
+
+	std::wstring outBuf{};
+	outBuf.reserve(sz);
+
+	for (auto &&sec : sections) { // 2nd pass copies to buffer
+		outBuf.push_back(L'[');
+		outBuf.append(sec.name);
+		outBuf.push_back(L']');
+		outBuf.append(lineBreak);
+
+		for (auto &&kv : sec.entries) {
+			outBuf.append(kv.key);
+			outBuf.push_back(L'=');
+			outBuf.append(kv.val);
+			outBuf.append(lineBreak);
+		}
+
+		outBuf.append(lineBreak);
+	}
+	outBuf.resize(outBuf.length() - lineBreak.length()); // remove last double line break
+
+	const std::vector<BYTE> outBlob = wd::str::to_utf8_blob(outBuf);
+	file::write(newIniPath, outBlob);
+	_iniPath = newIniPath; // save new path
+	return *this;
+}
+
+const IniFile::Section* IniFile::get(StrView sectionName) const noexcept {
+	for (auto &&section : sections) {
+		if (section.name == sectionName)
+			return &section;
+	}
+	return nullptr; // not found
+}
+
+const IniFile::Entry* IniFile::get(StrView sectionName, StrView keyName) const noexcept {
+	const Section *pSection = get(sectionName);
+	if (!pSection)
+		return nullptr;
+	return pSection->get(keyName);
+}
+
+
+static void version_load(VersionInfo &v, StrView exePath) {
+	const DWORD sz = GetFileVersionInfoSizeW(exePath.c_str(), nullptr);
+	if (!sz) [[unlikely]] {
+		throw WinErr{GetLastError(), L"GetFileVersionInfoSize failed."};
+	}
+
+	std::vector<BYTE> data(sz, 0);
+	if (BOOL ok = GetFileVersionInfoW(exePath.c_str(), 0, sz, data.data()); !ok) [[unlikely]] {
+		throw WinErr{GetLastError(), L"GetFileVersionInfo failed."};
+	}
+
+	VS_FIXEDFILEINFO *pVsffi = nullptr;
+#ifdef _MSC_VER
+#pragma warning(suppress: 6387)
+#endif
+	if (BOOL ok = VerQueryValueW(data.data(), L"\\", reinterpret_cast<void**>(&pVsffi), nullptr); !ok) [[unlikely]] {
+		throw WinErr{GetLastError(), L"VerQueryValue failed."};
+	}
+	v.version[0] = HIWORD(pVsffi->dwFileVersionMS);
+	v.version[1] = LOWORD(pVsffi->dwFileVersionMS);
+	v.version[2] = HIWORD(pVsffi->dwFileVersionLS);
+	v.version[3] = LOWORD(pVsffi->dwFileVersionLS);
+
+	struct Block final {
+		LANGID langId = 0;
+		WORD   codePage = 0;
+	};
+	Block *pBlock = nullptr;
+	VerQueryValueW(data.data(), L"\\VarFileInfo\\Translation", reinterpret_cast<void**>(&pBlock), nullptr);
+
+	std::initializer_list<std::pair<const WCHAR*, std::wstring*>> keysVals = {
+		{L"Comments",         &v.comments},
+		{L"CompanyName",      &v.companyName},
+		{L"FileDescription",  &v.fileDescription},
+		{L"FileVersion",      &v.fileVersion},
+		{L"InternalName",     &v.internalName},
+		{L"LegalCopyright",   &v.legalCopyright},
+		{L"LegalTrademarks",  &v.legalTrademarks},
+		{L"OriginalFilename", &v.originalFilename},
+		{L"ProductName",      &v.productName},
+		{L"ProductVersion",   &v.productVersion},
+		{L"PrivateBuild",     &v.privateBuild},
+		{L"SpecialBuild",     &v.specialBuild},
+	};
+	for (auto [key, pVal] : keysVals) {
+		const std::wstring f = str::fmt(L"\\StringFileInfo\\%04x%04x\\%s", pBlock->langId, pBlock->codePage, key);
+		WCHAR *pStr = nullptr;
+		VerQueryValueW(data.data(), f.c_str(), reinterpret_cast<void**>(&pStr), nullptr);
+		if (pStr)
+			pVal->insert(0, pStr);
+	}
+}
+
+VersionInfo::VersionInfo() {
+	WCHAR exePath[MAX_PATH] = {0};
+	GetModuleFileNameW(nullptr, exePath, ARRAYSIZE(exePath));
+	version_load(*this, exePath);
+}
+
+VersionInfo::VersionInfo(StrView exePath) {
+	version_load(*this, exePath);
 }

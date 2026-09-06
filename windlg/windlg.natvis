@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="wd::CoString">
+		<DisplayString Condition="_p == 0">[Co] L""</DisplayString>
+		<DisplayString Condition="_p != 0">[Co] {_p,su}</DisplayString>
+	</Type>
+	<Type Name="wd::StrView">
+		<Intrinsic Name="length" Expression="_len" />
+		<DisplayString Condition="_ptr == 0">[Vw] L""</DisplayString>
+		<DisplayString Condition="_ptr != 0">[Vw] {_ptr,su}</DisplayString>
+		<Expand>
+			<Item Name="[length]" ExcludeView="simple">length()</Item>
+			<ArrayItems>
+				<Size>_len</Size>
+				<ValuePointer>_ptr</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+</AutoVisualizer>

@@ -9,7 +9,7 @@ Not aimed at beginners, use only if you know what you're doing.
 Add all .cpp files under your compilation tree, and include the single header file:
 
 ```cpp
-#include <windlg/lib.h>
+#include <windlg/lib.hpp>
 ```
 
 Real-world examples:

@@ -6,7 +6,7 @@
 // All entities are enclosed within "wd" namespace.
 // -----------------------------------------------------------------------------
 
-// WinDlg namespace.
+/// WinDlg namespace.
 namespace wd { }
 
 #include "com.hpp"

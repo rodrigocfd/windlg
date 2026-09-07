@@ -7,8 +7,8 @@
 #include <Windows.h>
 
 namespace wd {
-	
-	// Wraps a Win32 error or an HRESULT.
+
+	/// Wraps a Win32 error or an HRESULT.
 	class WinErr {
 	public:
 		WinErr(DWORD errCode, const WCHAR *reason);

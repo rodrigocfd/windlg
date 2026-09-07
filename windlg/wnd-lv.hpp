@@ -4,13 +4,13 @@
 
 namespace wd {
 
-	// List view control.
+	/// List view control.
 	class ListView final : public BaseNativeCtrl {
 	public:
 		enum class Align : WORD { left=HDF_LEFT, right=HDF_RIGHT, center=HDF_CENTER };
 		enum class Arrow : WORD { none=0, asc=HDF_SORTUP, desc=HDF_SORTDOWN };
 
-		// A single column of the list view.
+		/// A single column of the ListView.
 		class Col final {
 		public:
 			constexpr Col(const ListView &lv, int index) noexcept
@@ -32,7 +32,7 @@ namespace wd {
 			int _index;
 		};
 
-		// A single item of the list view.
+		/// A single item of the ListView.
 		class Item final {
 		public:
 			constexpr Item(const ListView &lv, int index) noexcept
@@ -107,6 +107,7 @@ namespace wd {
 		[[nodiscard]] int item_selected_count() const noexcept;
 
 		enum class Sort { asc, desc, asc_i, desc_i };
+		/// Specifies the ListView column sorting.
 		struct SortCriterion final {
 			int index;
 			Sort sort;

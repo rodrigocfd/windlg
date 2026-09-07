@@ -5,7 +5,7 @@
 
 namespace wd {
 
-	// Templated COM smart pointer.
+	/// Templated COM smart pointer.
 	template<typename T>
 		requires std::is_base_of_v<IUnknown, T>
 	class ComPtr final {

@@ -4,13 +4,13 @@
 
 namespace wd {
 
-	// Automates OleInitialize and OleUninitialize calls.
+	/// Automates OleInitialize and OleUninitialize calls.
 	struct OleInit final {
 		~OleInit() noexcept { OleUninitialize(); }
 		OleInit();
 	};
 
-	// Automates IDropTarget usage.
+	/// Automates IDropTarget usage.
 	class DropTarget final {
 	private:
 		struct Impl final : public IDropTarget {

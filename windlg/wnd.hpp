@@ -4,7 +4,7 @@
 
 namespace wd {
 
-	// An accelerator table entry, passed to run_main_dialog().
+	/// An accelerator table entry, passed to run_main_dialog().
 	struct Acc final {
 		// A key modifier for an accelerator.
 		enum class Key : BYTE {
@@ -30,14 +30,14 @@ namespace wd {
 	void run_modal_dialog(BaseContainer *pOwner, BaseDialog &dlg); // Runs the modal window, blocking until it's closed.
 	void run_ui_thread(BaseContainer *pWnd, std::function<void()> f); // Runs the function in the original UI thread, synchronously. Useful to update the UI from a spawned thread.
 
-	// Base class to custom container windows.
+	/// Base class to custom container windows.
 	class BaseContainer {
 	public:
 		virtual ~BaseContainer() = default;
 		[[nodiscard]] virtual constexpr HWND hwnd() const noexcept = 0;
 	};
 
-	// Base class to build a dialog.
+	/// Base class to build a dialog.
 	class BaseDialog : public BaseContainer {
 	public:
 		virtual ~BaseDialog() = default;
@@ -74,7 +74,7 @@ namespace wd {
 		friend void run_modal_dialog(BaseContainer*, BaseDialog&);
 	};
 
-	// Base class to build a custom child control.
+	/// Base class to build a custom child control.
 	class BaseControl : public BaseContainer {
 	public:
 		virtual ~BaseControl() = default;
@@ -86,7 +86,7 @@ namespace wd {
 		BaseControl(BaseControl&&) = delete;
 		BaseControl& operator=(BaseControl&&) = delete; // non-movable
 
-		// Used when creating the control.
+		/// Used when creating the control.
 		struct {
 			const WCHAR *className = nullptr;
 			DWORD classStyle = CS_DBLCLKS;

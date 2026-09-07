@@ -177,6 +177,15 @@ MenuResource& MenuResource::create_popup() {
 	return *this;
 }
 
+MenuResource& MenuResource::create_toplevel() {
+	destroy();
+	_hMenu = CreateMenu();
+	if (!_hMenu) [[unlikely]] {
+		throw WinErr{GetLastError(), L"CreateMenu failed."};
+	}
+	return *this;
+}
+
 HMENU MenuResource::leak() noexcept {
 	HMENU h = _hMenu;
 	_hMenu = nullptr;

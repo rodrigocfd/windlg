@@ -9,7 +9,7 @@ namespace wd {
 	// Calls EnableWindow on multiple child controls.
 	void enable_many(const BaseContainer *pParent, bool doEnable, std::span<const WORD> ctrlIds) noexcept;
 
-	// Base to all native child controls.
+	/// Base to all native child controls.
 	class BaseNativeCtrl {
 	public:
 		virtual ~BaseNativeCtrl() = default;
@@ -26,7 +26,7 @@ namespace wd {
 		WORD _ctrlId;
 	};
 
-	// Button control.
+	/// Button control.
 	class Button : public BaseNativeCtrl {
 	public:
 		virtual ~Button() = default;
@@ -36,7 +36,7 @@ namespace wd {
 		const Button& set_text(StrView text) const noexcept;
 	};
 
-	// Check box control.
+	/// Check box control.
 	class CheckBox : public BaseNativeCtrl {
 	public:
 		virtual ~CheckBox() = default;
@@ -50,10 +50,10 @@ namespace wd {
 		const CheckBox& set_text_and_resize(StrView text) const;
 	};
 
-	// Combo box control.
+	/// Combo box control.
 	class ComboBox final : public BaseNativeCtrl {
 	public:
-		// A single item of the combo box.
+		/// A single item of the ComboBox.
 		class Item final {
 		public:
 			constexpr Item(const ComboBox &cmb, int index) noexcept
@@ -85,7 +85,7 @@ namespace wd {
 		[[nodiscard]] std::wstring text() const;
 	};
 
-	// Date and time picker control.
+	/// Date and time picker control.
 	class DateTimePicker final : public BaseNativeCtrl {
 	public:
 		virtual ~DateTimePicker() = default;
@@ -96,14 +96,14 @@ namespace wd {
 		const DateTimePicker& set_time(const FILETIME &ft) const noexcept;
 	};
 
-	// Edit control.
+	/// Edit control.
 	class Edit final : public Button {
 	public:
 		virtual ~Edit() = default;
 		constexpr Edit(const BaseContainer *pParent, WORD ctrlId) noexcept : Button{pParent, ctrlId} { }
 	};
 
-	// Progress bar control.
+	/// Progress bar control.
 	class ProgressBar final : public BaseNativeCtrl {
 	public:
 		enum class State : WORD { normal=PBST_NORMAL, error=PBST_ERROR, pause=PBST_PAUSED };
@@ -123,14 +123,14 @@ namespace wd {
 		bool _isMarquee = false;
 	};
 
-	// Radio button control.
+	/// Radio button control.
 	class RadioButton final : public CheckBox {
 	public:
 		virtual ~RadioButton() = default;
 		constexpr RadioButton(const BaseContainer *pParent, WORD ctrlId) noexcept : CheckBox{pParent, ctrlId} { }
 	};
 
-	// Static control.
+	/// Static control.
 	class Static final : public BaseNativeCtrl {
 	public:
 		virtual ~Static() = default;
@@ -141,10 +141,10 @@ namespace wd {
 		const Static& set_text_and_resize(StrView text) const;
 	};
 
-	// Status bar control.
+	/// Status bar control.
 	class StatusBar final : public BaseNativeCtrl {
 	public:
-		// A single part of the status bar.
+		/// A single part of the StatusBar.
 		class Part final {
 		public:
 			constexpr Part(const StatusBar &sb, int index) noexcept

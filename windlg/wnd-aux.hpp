@@ -4,7 +4,7 @@
 
 namespace wd {
 
-	// Adjusts pixel values according to current system DPI.
+	/// Adjusts pixel values according to current system DPI.
 	namespace dpi {
 		[[nodiscard]] int x(int xVal) noexcept;
 		[[nodiscard]] int y(int yVal) noexcept;
@@ -21,7 +21,7 @@ namespace wd {
 		resz_hold, resz_move, resz_resz,
 	};
 
-	// Automates layout behavior when parent window resizes.
+	/// Automates layout behavior when parent window resizes.
 	class Layout final {
 	public:
 		explicit Layout(const BaseContainer *pParent, size_t numCtrlsReserve = 0);
@@ -41,7 +41,7 @@ namespace wd {
 
 	class MenuSub;
 
-	// Wraps HMENU.
+	/// Wraps HMENU.
 	class Menu {
 	public:
 		virtual ~Menu() = default;
@@ -63,7 +63,7 @@ namespace wd {
 		HMENU _hMenu;
 	};
 
-	// Manages an HMENU resource.
+	/// Manages an HMENU resource.
 	class MenuResource final : public Menu {
 	public:
 		~MenuResource() noexcept { destroy(); }
@@ -73,13 +73,14 @@ namespace wd {
 		MenuResource& operator=(MenuResource &&other) noexcept;
 
 		MenuResource& destroy() noexcept;
-		MenuResource& create_popup(); // Calls CreatePopupMenu().
+		MenuResource& create_popup(); // Calls CreatePopupMenu() to create a popup/context menu.
+		MenuResource& create_toplevel(); // Calls CreateMenu() to create a top level menu for a window.
 		[[nodiscard]] HMENU leak() noexcept;
 		MenuResource& load_from_resource(HINSTANCE hInst, WORD menuId); // Calls LoadMenu().
 		MenuResource& load_from_resource(HWND hParent, WORD menuId);    // Calls LoadMenu().
 	};
 
-	// Temporary object for a submenu being added.
+	/// Temporary object for a submenu being added.
 	class MenuSub final {
 	public:
 		constexpr MenuSub(HMENU hMenu0, HMENU hMenu1, HMENU hMenu2) noexcept :
@@ -94,7 +95,7 @@ namespace wd {
 		HMENU _hMenu0, _hMenu1, _hMenu2; // up to 3 levels
 	};
 
-	// Manages an HIMAGELIST.
+	/// Manages an HIMAGELIST.
 	class ImageList final {
 	public:
 		~ImageList() noexcept { destroy(); }

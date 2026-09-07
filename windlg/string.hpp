@@ -10,7 +10,7 @@
 
 namespace wd {
 
-	// A wide string pointer with CoTaskMemAlloc() and CoTaskMemFree().
+	/// A wide string pointer with CoTaskMemAlloc() and CoTaskMemFree().
 	class CoString final {
 	public:
 		~CoString() noexcept;
@@ -30,7 +30,7 @@ namespace wd {
 		WCHAR *_p;
 	};
 
-	// A null-terminated std::wstring_view.
+	/// A null-terminated std::wstring_view.
 	class StrView final {
 	public:
 		using value_type = WCHAR;
@@ -144,7 +144,7 @@ namespace _wd_internal {
 
 }
 
-// String utilities.
+/// String utilities.
 namespace wd::str {
 
 	// String formatting capable of handling std::wstring and wd::StrView.
@@ -208,15 +208,16 @@ namespace wd::str {
 	[[nodiscard]] inline bool ends_with_i(const std::wstring &s, StrView suffix) noexcept                          { return StrView{s}.ends_with_i(suffix); }
 	[[nodiscard]] inline bool ends_with_i(const std::wstring &s, WCHAR chSuffix) noexcept                          { return StrView{s}.ends_with_i(chSuffix); }
 
-	enum class Time { ymd, ymd_w, ymd_hm, ymd_hms, ymd_hmsm, hm, hms, hmsm, sm }; // Time formatting options for str::fmt_time().
-	[[nodiscard]] std::wstring fmt_time(const FILETIME &ft, Time format);   // Formats time according to options.
-	[[nodiscard]] std::wstring fmt_time(const SYSTEMTIME &st, Time format); // Formats time according to options.
+	/// Time formatting options for str::fmt_time().
+	enum class Time { ymd, ymd_w, ymd_hm, ymd_hms, ymd_hmsm, hm, hms, hmsm, sm };
+	[[nodiscard]] std::wstring fmt_time(const FILETIME &ft, Time format);   ///< Formats time according to options.
+	[[nodiscard]] std::wstring fmt_time(const SYSTEMTIME &st, Time format); ///< Formats time according to options.
 
 }
 
 namespace wd {
 
-	// Calls OutputDebugString() with formatting.
+	/// Calls OutputDebugString() with formatting.
 	template<typename ...Args>
 	void dbg([[maybe_unused]] wd::StrView format, [[maybe_unused]] Args &&...args) {
 	#ifdef _DEBUG

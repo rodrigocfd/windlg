@@ -4,7 +4,7 @@
 
 namespace wd {
 
-	// Manages a file HANDLE.
+	/// Manages a file HANDLE.
 	class File final {
 	public:
 		~File() noexcept { close(); }
@@ -18,7 +18,7 @@ namespace wd {
 		[[nodiscard]] HANDLE leak() noexcept;
 		File& open_read_only(StrView filePath);
 		File& open_rw(StrView filePath);
-		[[nodiscard]] std::vector<BYTE> read(size_t numBytes = std::numeric_limits<size_t>::max()) const;
+		[[nodiscard]] std::vector<BYTE> read(size_t numBytes = std::dynamic_extent) const;
 		[[nodiscard]] size_t size() const;
 		FILETIME time_created() const;
 		FILETIME time_last_write() const;
@@ -34,7 +34,7 @@ namespace wd {
 		HANDLE _hFile;
 	};
 
-	// File utilities.
+	/// File utilities.
 	namespace file {
 		[[nodiscard]] std::wstring dir_from(StrView filePath);      // Returns the directory, without trailing backslash.
 		[[nodiscard]] std::wstring exe_dir();                       // Returns the directory of current EXE.
@@ -58,10 +58,10 @@ namespace wd {
 		void write_ini(StrView iniPath, StrView section, StrView key, StrView val); // Writes a string to the entry of an INI file.
 	}
 
-	// Iterates over all files and directories directly under a directory. Won't search recursively.
+	/// Iterates over all files and directories directly under a directory. Won't search recursively.
 	class DirList final {
 	public:
-		// DirList custom iterator, which is a view over the owning DirList object.
+		/// DirList custom iterator, which is a view over the owning DirList object.
 		class Iter final {
 		public:
 			using value_type = std::wstring;
@@ -104,10 +104,10 @@ namespace wd {
 		std::wstring _basePath;
 	};
 
-	// Iterates over all files under a directory and its subdirectories, recursively.
+	/// Iterates over all files under a directory and its subdirectories, recursively.
 	class DirListDeep final {
 	public:
-		// DirList custom iterator, which is a view over the owning DirList object.
+		/// DirList custom iterator, which is a view over the owning DirList object.
 		class Iter final {
 		public:
 			using value_type = std::wstring;
@@ -153,13 +153,15 @@ namespace wd {
 		DirListDeep::Iter *_pDeepIter;
 	};
 
-	// Manages an INI file.
+	/// Manages an INI file.
 	class IniFile final {
 	public:
-		struct Entry final { // An entry of a section.
+		/// An entry of a Section of an IniFile.
+		struct Entry final {
 			std::wstring key{}, val{};
 		};
-		struct Section final { // A section of an INI file.
+		/// A section of an IniFile.
+		struct Section final {
 			std::wstring name{};
 			std::vector<Entry> entries{}; // Entries of the INI file, freely editable.
 
@@ -195,7 +197,7 @@ namespace wd {
 		std::wstring _iniPath{};
 	};
 
-	// Version information from the EXE.
+	/// Version information from the EXE.
 	struct VersionInfo final {
 	public:
 		VersionInfo();

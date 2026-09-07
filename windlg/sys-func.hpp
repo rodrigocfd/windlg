@@ -8,20 +8,20 @@ namespace wd {
 	int run_cmd_sync(StrView cmdLine); // Calls CreateProcess() to run the command line synchronously.
 	void run_thread_pool(size_t numRuns, std::function<void(size_t)> fun, size_t maxThreads = std::dynamic_extent); // Spawns threads and calls fun for numRuns times. This function is not reentrant.
 
-	// Measures a time interval.
+	/// Measures a time interval.
 	class StopWatch final {
 	public:
 		StopWatch() noexcept;
-		StopWatch& restart() noexcept;
-		size_t ellapsed_ms() const noexcept; // Returns the ellapsed time in milliseconds.
-		std::wstring ellapsed_fmt() const; // Returns the ellapsed time in milliseconds, conveniently formatted.
+		StopWatch& restart() noexcept;       ///< Restarts the initial base time.
+		size_t ellapsed_ms() const noexcept; ///< Returns the ellapsed time in milliseconds.
+		std::wstring ellapsed_fmt() const;   ///< Returns the ellapsed time in milliseconds, conveniently formatted.
 	private:
 		LARGE_INTEGER _freq, _t0;
 	};
 
 }
 
-// Various system dialogs.
+/// Various system dialogs.
 namespace wd::sys_dlg {
 
 	void msg_ok(const BaseContainer *pOwner, StrView title, StrView body);
@@ -39,7 +39,7 @@ namespace wd::sys_dlg {
 
 }
 
-// FILETIME utilities.
+/// FILETIME utilities.
 namespace wd::time {
 
 	FILETIME& add_msec(FILETIME &ft, size_t numMsecs) noexcept;
@@ -52,8 +52,8 @@ namespace wd::time {
 	inline SYSTEMTIME& add_min(SYSTEMTIME &st, size_t numMins) noexcept   { return add_sec(st, numMins * 60); }
 	inline SYSTEMTIME& add_hour(SYSTEMTIME &st, size_t numHours) noexcept { return add_min(st, numHours * 60); }
 	inline SYSTEMTIME& add_day(SYSTEMTIME &st, size_t numDays) noexcept   { return add_hour(st, numDays * 24); }
-	[[nodiscard]] size_t diff_ms(const FILETIME &a, const FILETIME &b) noexcept;
-	[[nodiscard]] size_t diff_ms(const SYSTEMTIME &a, const SYSTEMTIME &b) noexcept;
+	[[nodiscard]] size_t diff_ms(const FILETIME &a, const FILETIME &b) noexcept;     ///< Calculates the difference in miliseconds between the two values.
+	[[nodiscard]] size_t diff_ms(const SYSTEMTIME &a, const SYSTEMTIME &b) noexcept; ///< Calculates the difference in miliseconds between the two values.
 	[[nodiscard]] FILETIME now() noexcept;
 	[[nodiscard]] FILETIME to_filetime(const SYSTEMTIME &st) noexcept;
 	[[nodiscard]] SYSTEMTIME to_systemtime(const FILETIME &ft) noexcept;
